@@ -1,6 +1,6 @@
-# 2026-06-05 — malgn-noti-mng 관리 레포 신설: 문서 집약 + Nuxt 문서/이력 브라우저 앱 + Cloudflare 배포
+# 2026-06-05 — malgn-noti-mng 관리 레포 신설: 문서 집약 + Nuxt 문서/이력 브라우저 앱 + 현황판 + Cloudflare 배포
 
-**한 줄 요약**: 맑은노티 프로젝트를 관리할 신규 레포 `malgn-noti-mng`를 GitHub에 연결하고, `malgn-noti`의 `doc/` 트리(공통 참조·도메인 정본·작업 이력)를 집약한 뒤, malgn-noti와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3) + `@nuxt/content` 기반 **문서/이력 브라우저 앱**으로 구현해 Cloudflare Pages에 정적 배포(<https://malgn-noti-mng.pages.dev>). 앞으로의 작업 이력은 이 레포에서 작성·갱신한다.
+**한 줄 요약**: 맑은노티 프로젝트를 관리할 신규 레포 `malgn-noti-mng`를 GitHub에 연결하고, `malgn-noti`의 `doc/` 트리(공통 참조·도메인 정본·작업 이력)를 집약한 뒤, malgn-noti와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3) + `@nuxt/content` 기반 **문서/이력 브라우저 앱**으로 구현해 Cloudflare Pages에 정적 배포(<https://malgn-noti-mng.pages.dev>). 추가로 malgn-noti `/wbs`를 읽기 전용 **"맑은노티 현황판"(`/board`)**으로 이식하고 대시보드에 WBS 현황 요약을 추가(공개 API `GET /wbs` 조회). 앞으로의 작업 이력은 이 레포에서 작성·갱신한다.
 
 ---
 
@@ -33,6 +33,15 @@
 - Pages 프로젝트 `malgn-noti-mng` 생성(production-branch=main) 후 `.output/public` 배포. 재배포로 57개 정규 라우트 전부 라이브 200 확인(`/docs/*` 9개 문서 + `/docs/history/*` 16개 이력 + 인덱스).
 - 인증: wrangler OAuth(info@malgnsoft.com).
 
+## 5. 현황판(/board) + 대시보드 WBS 현황 요약
+
+- malgn-noti `/wbs` 페이지를 `malgn-noti-mng/board`에 **"맑은노티 현황판"**으로 이식. mng는 인증/편집이 없는 정적 사이트이므로 **읽기 전용**(편집 모달·auth·toast 제거), 자체 sticky 헤더 대신 mng 기본 레이아웃(GNB) 사용.
+- 데이터는 공개 API `GET /wbs`(`malgn-noti-api.malgnsoft.workers.dev`)를 `useFetch`로 조회 — 프리렌더 시 빌드 타임에 베이크 + 클라이언트에서 라이브 갱신. `runtimeConfig.public.apiBaseUrl` 추가.
+- 공용화: `composables/useWbs.ts`(조회 + 가중평균·상태 카운트·날짜 포맷·그룹화) + `components/AppWbsOverview.vue`(hero stats 3종 + 단계별 진행률 리스트). 대시보드(`/`)와 현황판(`/board`)이 동일 컴포넌트 공유.
+- **대시보드에 "프로젝트 현황" 요약 추가**(첨부 이미지 내용 — 전체 진행률·완료·진행 중·단계별 진행률) + GNB에 "현황판" 링크. 개요 행 클릭 → `/board#stage-<id>` 상세로 이동.
+- `/board` 프리렌더 라우트 추가. 라이브 검증: `/board` 200, "맑은노티 현황판"·Step 1~5·47.5%/55%/35% 베이크 확인, 대시보드 현황 요약 노출.
+- **WBS 문서 페이지는 별도** — 현황판은 진행률 뷰이고, WBS 정본 문서는 추후 별도 구성.
+
 ---
 
 ## 산출물
@@ -40,7 +49,8 @@
 - **신규 레포**: `malgn-noti-mng` (GitHub `malgnsoft/malgn-noti-mng`, branch `main`).
 - **프로덕션**: <https://malgn-noti-mng.pages.dev> (배포마다 `https://<id>.malgn-noti-mng.pages.dev` alias).
 - **커밋**: 문서 집약 `0db385a` · history 작성처 변경 `bebb5b8` · 앱 스캐폴딩 `5ac81c6` · 프리렌더 대소문자 fix(이번).
-- **주요 파일**: `nuxt.config.ts`(프리렌더 라우트 열거), `content.config.ts`(doc/ 매핑), `app/pages/{index,docs/index,docs/[...slug],history/index}.vue`, `app/layouts/default.vue`, `app/composables/useDocs.ts`, `package.json`(@nuxt/content + better-sqlite3 + pnpm.onlyBuiltDependencies).
+- **주요 파일**: `nuxt.config.ts`(프리렌더 라우트 열거 + apiBaseUrl), `content.config.ts`(doc/ 매핑), `app/pages/{index,board,docs/index,docs/[...slug],history/index}.vue`, `app/layouts/default.vue`, `app/composables/{useDocs,useWbs}.ts`, `app/components/AppWbsOverview.vue`, `package.json`(@nuxt/content + better-sqlite3 + pnpm.onlyBuiltDependencies).
+- **현황판**: <https://malgn-noti-mng.pages.dev/board> (맑은노티 현황판, 읽기 전용, `GET /wbs` 라이브).
 
 ## 다음 단계 / 알려진 한계
 
