@@ -3,8 +3,10 @@
     <header class="gnb">
       <div class="gnb-inner">
         <NuxtLink to="/" class="brand">
-          <span class="brand-mark">맑은노티</span>
-          <span class="brand-sub">관리</span>
+          <span class="brand-icon"><AppLogoMark /></span>
+          <span class="brand-text">맑은</span>
+          <span class="brand-message">message</span>
+          <span class="brand-sub">프로젝트 관리</span>
         </NuxtLink>
         <nav class="gnb-nav">
           <NuxtLink
@@ -74,17 +76,43 @@ const nav = [
   margin: 0 auto;
   padding: 0 24px;
 }
+/* 사용자단(malgn-noti) GNB 로고와 동일 — 마크 아이콘 + "맑은" + "message" */
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  background: var(--ink-900);
+  color: var(--white);
+  border-radius: var(--r-md, 8px);
+  display: grid;
+  place-items: center;
+}
+.brand-text {
+  font-size: 16px;
   font-weight: 700;
   color: var(--ink-900);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.brand-message {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ink-400);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin-left: -5px;
 }
 .brand-sub {
+  margin-left: 3px;
   font-size: 12px;
   font-weight: 600;
   color: var(--accent-ink);
+  line-height: 1;
 }
 .gnb-nav {
   display: flex;
