@@ -21,6 +21,16 @@ export const wbsSteps: Record<number, string> = {
   5: 'Step 5 · 서비스 개발',
 }
 
+// 단계 가중치·진행률 — 현황판(보드)과 동일 값. 전체 진척은 5단계 가중평균(=47.5%).
+// (Step 2·4는 WBS 화면엔 없지만 전체 진척 산정에는 포함)
+export const wbsStageMeta: Record<number, { weight: number, progress: number }> = {
+  1: { weight: 10, progress: 55 },
+  2: { weight: 15, progress: 55 },
+  3: { weight: 20, progress: 35 },
+  4: { weight: 10, progress: 20 },
+  5: { weight: 45, progress: 55 },
+}
+
 export const wbsGantt: GanttItem[] = [
   // ── Step 1 · 프로젝트 준비 ──────────────────────────────
   { step: 1, group: 'R&R 분배', name: '작업 R&R 분배', owner: '김덕조', start: '2026-05-08', end: '2026-05-08', progress: 100, note: '메모 확인' },

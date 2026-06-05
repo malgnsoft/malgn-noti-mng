@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { wbsGantt, wbsSteps, type GanttItem } from '~/utils/wbsData'
+import { wbsGantt, wbsSteps, wbsStageMeta, type GanttItem } from '~/utils/wbsData'
 
 useHead({ title: '전체 일정' })
 
@@ -73,14 +73,19 @@ const tree: Step[] = (() => {
 })()
 const allTasks = tree.flatMap(s => s.cats.flatMap(c => c.tasks))
 
-/* ── KPI (전체) ── */
+/* ── KPI (전체) ── 진척은 보드와 동일한 5단계 가중평균(47.5%), 카운트는 작업 기준 ── */
 const kpi = computed(() => {
   const n = allTasks.length
-  const avg = n ? Math.round(allTasks.reduce((a, t) => a + t.progress, 0) / n) : 0
+  const metas = Object.values(wbsStageMeta)
+  const tw = metas.reduce((a, s) => a + s.weight, 0)
+  const avg = Math.round((metas.reduce((a, s) => a + s.weight * s.progress, 0) / tw) * 10) / 10
   const c = { done: 0, active: 0, plan: 0, late: 0 }
   allTasks.forEach(t => c[t.status]++)
   return { n, avg, ...c }
 })
+function stepProgress(stepId: string) {
+  return wbsStageMeta[Number(stepId.replace('step-', ''))]?.progress ?? 0
+}
 
 /* ── 담당자별 카운트 ── */
 const peopleCount = computed(() => {
@@ -289,11 +294,11 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
                 <button class="chev" :data-open="stepOpen[r.id]" @click="stepOpen[r.id] = !stepOpen[r.id]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6" /></svg></button>
                 <span class="badge">{{ r.badge }}</span>
                 <span class="stitle">{{ r.title }}</span>
-                <span class="scount">· {{ r.a.count }}개 · 평균 {{ r.a.avg }}%</span>
+                <span class="scount">· {{ r.a.count }}개 · {{ stepProgress(r.id) }}%</span>
               </div>
             </div>
             <div class="track" :style="{ width: trackWidth }">
-              <div v-if="r.a.hasBar" class="rollup" style="background:var(--band-2)" :style="rollStyle(r.a)"><i style="background:var(--accent);opacity:1" :style="{ width: r.a.avg + '%' }" /></div>
+              <div v-if="r.a.hasBar" class="rollup" style="background:var(--band-2)" :style="rollStyle(r.a)"><i style="background:var(--accent);opacity:1" :style="{ width: stepProgress(r.id) + '%' }" /></div>
             </div>
           </div>
 
