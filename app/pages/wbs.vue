@@ -165,6 +165,27 @@ const tipPos = computed(() => {
   return { left: x + 'px', top: (tip.value.y + 16) + 'px' }
 })
 
+/* ── 담당 호버 툴팁 ── */
+const ownerTip = ref<{ text: string, x: number, y: number } | null>(null)
+function showOwner(t: Task, e: MouseEvent) { ownerTip.value = { text: t.who.length ? t.who.join(', ') : '미정', x: e.clientX, y: e.clientY } }
+function moveOwner(e: MouseEvent) { if (ownerTip.value) ownerTip.value = { ...ownerTip.value, x: e.clientX, y: e.clientY } }
+function hideOwner() { ownerTip.value = null }
+const ownerTipPos = computed(() => {
+  if (!ownerTip.value) return {}
+  const x = Math.min(ownerTip.value.x + 14, (import.meta.client ? window.innerWidth : 1280) - 200)
+  return { left: x + 'px', top: (ownerTip.value.y + 16) + 'px' }
+})
+
+/* ── 메모 팝오버 (클릭) ── */
+const memoPop = ref<{ text: string, x: number, y: number } | null>(null)
+function openMemo(note: string, e: MouseEvent) { memoPop.value = { text: note, x: e.clientX, y: e.clientY } }
+function closeMemo() { memoPop.value = null }
+const memoPos = computed(() => {
+  if (!memoPop.value) return {}
+  const x = Math.min(memoPop.value.x + 8, (import.meta.client ? window.innerWidth : 1280) - 320)
+  return { left: x + 'px', top: (memoPop.value.y + 14) + 'px' }
+})
+
 /* ── 등록/수정/삭제 ── */
 const STEP_OPTIONS = [1, 3, 5]
 const modalOpen = ref(false)
@@ -320,9 +341,12 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
               <div class="cell c-name">
                 <span class="indent" />
                 <a v-if="r.t.href" :href="r.t.href" target="_blank" rel="noopener noreferrer" class="tname">{{ r.t.name }}</a>
-                <span v-else class="tname" :title="r.t.note ? r.t.name + ' — ' + r.t.note : r.t.name">{{ r.t.name }}</span>
+                <span v-else class="tname">{{ r.t.name }}</span>
+                <button v-if="r.t.note" class="memo-btn" title="메모 보기" @click.stop="openMemo(r.t.note!, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 10h16M4 15h10" /></svg>
+                </button>
               </div>
-              <div class="cell c-who" :title="r.t.who.length ? r.t.who.join(', ') : '미정'">
+              <div class="cell c-who" @mouseenter="showOwner(r.t, $event)" @mousemove="moveOwner" @mouseleave="hideOwner">
                 <span v-if="r.t.who.length" class="who"><span class="ava" :style="{ background: PCOLOR[r.t.who[0]!] ?? '#94a3b8' }">{{ r.t.who[0]![0] }}</span><span class="nm">{{ r.t.who[0] }}</span><span v-if="r.t.who.length > 1" class="more">+{{ r.t.who.length - 1 }}</span></span>
                 <span v-else class="who"><span class="nm dash">미정</span></span>
               </div>
@@ -355,6 +379,18 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
       <div class="trow"><span>진척율</span><b>{{ tip.t.progress }}%</b></div>
       <div class="barmini"><i :style="{ width: tip.t.progress + '%', background: `var(--${tip.t.status})` }" /></div>
     </div>
+
+    <!-- 담당 호버 툴팁 -->
+    <div v-if="ownerTip" class="otip" :style="ownerTipPos">{{ ownerTip.text }}</div>
+
+    <!-- 메모 팝오버 -->
+    <template v-if="memoPop">
+      <div class="memo-backdrop" @click="closeMemo" />
+      <div class="memo-pop" :style="memoPos">
+        <div class="memo-pop-h">메모<button class="memo-x" @click="closeMemo">✕</button></div>
+        <div class="memo-pop-b">{{ memoPop.text }}</div>
+      </div>
+    </template>
 
     <!-- 등록/수정 모달 -->
     <div v-if="modalOpen" class="modal-ov" @click.self="closeModal">
@@ -470,7 +506,17 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
 .cell.c-done .dn { color: var(--done); font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
 .cell.c-done .dn::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--done); }
 .cell.c-prog { width: var(--col-prog); justify-content: flex-end; gap: 7px; }
-.tname { font-size: var(--fs); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.tname { font-size: var(--fs); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; flex: 1; min-width: 0; }
+.memo-btn { flex-shrink: 0; width: 18px; height: 18px; display: grid; place-items: center; border: 0; background: transparent; color: var(--ink-3); cursor: pointer; border-radius: 4px; padding: 0; }
+.memo-btn:hover { background: var(--band); color: var(--accent); }
+.memo-btn svg { width: 13px; height: 13px; }
+.otip { position: fixed; z-index: 9999; pointer-events: none; background: var(--ink); color: #fff; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px; box-shadow: var(--shadow-pop); white-space: nowrap; }
+.memo-backdrop { position: fixed; inset: 0; z-index: 9998; }
+.memo-pop { position: fixed; z-index: 9999; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-pop); width: 300px; max-width: 92vw; }
+.memo-pop-h { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; font-size: 12px; font-weight: 700; color: var(--ink-2); border-bottom: 1px solid var(--line); }
+.memo-x { border: 0; background: transparent; color: var(--ink-3); cursor: pointer; font-size: 12px; padding: 0 2px; }
+.memo-x:hover { color: var(--ink); }
+.memo-pop-b { padding: 12px; font-size: 13px; line-height: 1.6; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
 a.tname { color: var(--accent); text-decoration: none; } a.tname:hover { text-decoration: underline; }
 .dash { color: var(--ink-3); }
 .who { display: inline-flex; align-items: center; gap: 3px; min-width: 0; }
