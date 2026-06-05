@@ -150,14 +150,16 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
 .links li:first-child .link { border-top: 0; }
 .link-main {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
 }
 .link-label {
   font-size: 14px;
   font-weight: 500;
   color: var(--ink-800);
+  flex-shrink: 0;
 }
 .link-url {
   font-family: var(--font-mono);
