@@ -224,7 +224,7 @@ const totalDays = days.length
   text-overflow: ellipsis;
   vertical-align: middle;
 }
-.c-grp { left: 0; width: 124px; min-width: 124px; max-width: 124px; font-weight: 600; color: #3f3f46; padding-left: 16px; }
+.c-grp { left: 0; width: 124px; min-width: 124px; max-width: 124px; font-weight: 600; color: #3f3f46; padding-left: 10px; }
 .c-name { left: 124px; width: 220px; min-width: 220px; max-width: 220px; }
 .c-owner { left: 344px; width: 60px; min-width: 60px; max-width: 60px; text-align: center; color: #52525b; }
 .c-date { width: 54px; min-width: 54px; max-width: 54px; text-align: center; font-family: var(--font-mono); color: #52525b; }
@@ -272,7 +272,7 @@ const totalDays = days.length
   background: #cbd5e1;
   color: #0f172a;
   font-weight: 800;
-  padding: 0 10px 0 16px;
+  padding: 0 10px;
   white-space: nowrap;
 }
 .step-band { background: #e2e8f0; }
