@@ -25,7 +25,7 @@ const docs = computed(() => (all.value ?? []).filter(d => !isHistory(d.path)))
 
 <style scoped>
 .page {
-  max-width: 880px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 40px 24px 64px;
 }
