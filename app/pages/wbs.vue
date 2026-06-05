@@ -107,7 +107,7 @@ const totalDays = days.length
   <div class="wbs-page">
     <div class="wbs-head">
       <div>
-        <h1 class="wbs-title">맑은메시지(가칭) 프로젝트 작업 내역</h1>
+        <h1 class="wbs-title">전체 일정</h1>
         <p class="wbs-sub">WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일 {{ md(TODAY) }}</p>
       </div>
       <div class="legend">
