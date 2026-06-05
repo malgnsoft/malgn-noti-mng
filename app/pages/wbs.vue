@@ -195,7 +195,8 @@ const totalDays = days.length
 
 /* ── 엑셀 스타일 그리드 ── */
 .grid-scroll {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100vh - 170px);
   border: 1px solid #cfcfcf;
   background: #fff;
 }
@@ -242,7 +243,8 @@ const totalDays = days.length
 }
 .gantt thead th.corner {
   position: sticky;
-  z-index: 20;
+  top: 0;
+  z-index: 30;
   background: #e4e4e7;
   vertical-align: middle;
 }
@@ -252,8 +254,8 @@ const totalDays = days.length
 .corner.c-date:nth-of-type(4) { left: 404px; }
 .corner.c-date:nth-of-type(5) { left: 458px; }
 .corner.c-pct { left: 512px; }
-.m-head { background: #d9e2ef; color: #1e3a5f; font-weight: 700; }
-.d-head { width: 24px; min-width: 24px; max-width: 24px; line-height: 1.05; padding: 1px 0; }
+.m-head { background: #d9e2ef; color: #1e3a5f; font-weight: 700; position: sticky; top: 0; z-index: 20; }
+.d-head { width: 24px; min-width: 24px; max-width: 24px; line-height: 1.05; padding: 1px 0; position: sticky; top: 22px; z-index: 20; }
 .d-head .d-num { display: block; font-size: 11px; }
 .d-head .d-dow { display: block; font-size: 9px; color: #71717a; }
 .d-head.weekend { background: #fde8ea; color: #b91c1c; }
