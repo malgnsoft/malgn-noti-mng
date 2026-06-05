@@ -62,9 +62,13 @@
 - 검증: `/api/board` 200 + D1 값 변경(`last_updated`)이 즉시 반영됨을 확인(폴백 아님). `/`·`/board`·문서·이력 전부 200.
 - **(후속) Drizzle ORM 도입** — 브라우저↔D1 직결은 불가(서버 한 겹 필수)임을 정리하고, raw SQL 대신 **Drizzle**로 D1 직접 쿼리. `server/db/schema.ts`(스키마 정본) + `server/utils/db.ts`(`useDb()` 공용) + `board.get.ts` 리팩터. 마이그레이션은 `drizzle-kit`(`server/db/migrations/`)으로 일원화(수기 `schema.sql` 제거). `db:generate`/`db:apply`/`db:seed` 스크립트 추가.
 
----
+## 8. 간트 WBS 신규(`/wbs`) — 엑셀 스타일
 
-## 산출물
+- 별도 예고했던 **간트 차트 WBS**를 `/wbs`로 신규 구현(엑셀 스타일 그리드 + 일 단위 간트).
+- 대상: **Step 1 · 3 · 5**, 화면 단위로 최대 분해(이미지의 Step 5 화면 항목 + Step 1·3 항목, 총 61개).
+- 컬럼: 구분(병합 표시) · 작업(화면) · 담당 · **시작일** · **종료일**(기존 목표일) · 진척율. 좌측 열은 가로 스크롤 시 고정(sticky).
+- 간트: 시작일~종료일에 해당하는 날짜 칸을 자동 채색(진척율만큼 완료=진한 초록, 잔여=연한 초록), 주말(토·일) 칸 적색 틴트 + 오늘(2026-06-05) 마커. 월 헤더 + 일/요일 헤더.
+- 데이터는 정적 모듈(`app/utils/wbsData.ts`)이라 프리렌더. 시작일은 작업 기간 기준 부여(추정), 종료일·진척율은 소스(이미지/보드) 기준. GNB에 `WBS` 메뉴 추가.
 
 - **신규 레포**: `malgn-noti-mng` (GitHub `malgnsoft/malgn-noti-mng`, branch `main`).
 - **프로덕션**: <https://malgn-noti-mng.pages.dev> (배포마다 `https://<id>.malgn-noti-mng.pages.dev` alias).

@@ -45,6 +45,7 @@
 const nav = [
   { to: '/', label: '대시보드', icon: 'i-lucide-layout-dashboard' },
   { to: '/board', label: '현황판', icon: 'i-lucide-gauge' },
+  { to: '/wbs', label: 'WBS', icon: 'i-lucide-gantt-chart' },
   { to: '/docs', label: '문서', icon: 'i-lucide-book-text' },
   { to: '/history', label: '작업 이력', icon: 'i-lucide-history' }
 ]

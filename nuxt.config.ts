@@ -24,7 +24,8 @@ function collectDocRoutes(dir: string, base = ''): string[] {
 }
 
 // '/' 와 '/board' 는 런타임에 D1(/api/board)을 조회하므로 프리렌더하지 않고 SSR(Functions).
-const prerenderRoutes = ['/docs', '/history', ...collectDocRoutes(docDir)]
+// /wbs 는 정적 데이터(app/utils/wbsData) 기반이라 프리렌더.
+const prerenderRoutes = ['/wbs', '/docs', '/history', ...collectDocRoutes(docDir)]
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
