@@ -206,12 +206,14 @@ pnpm test
 - 사용자가 "배포"라고 하면 **빌드 → 배포 → 검증(프로덕션 HTTP 200 + 빌드 CSS/마커 확인) → 커밋·푸시·history**까지 한 흐름으로 처리.
 - 배포는 **working tree 기준**이므로 배포 후 반드시 git 커밋으로 라이브 ↔ `main` 일치시킬 것.
 
-**작업 이력 (`doc/history/`)**
+**작업 이력 (앞으로 [`malgn-noti-mng`](../malgn-noti-mng)에서 작성·갱신)**
 
-- `doc/history/history.yyyyMMdd.md` — **하루 한 파일**, 작업이 있는 날만 생성.
+- ⚠️ **작성처 변경(2026-06-05~)**: 작업 이력(history)은 이제 **관리 레포 `malgn-noti-mng`의 `doc/history/`에서 작성하고 갱신한다.** `malgn-noti`의 `doc/history/`에는 더 이상 신규 작성하지 않는다(기존 파일은 이관 완료분).
+- `../malgn-noti-mng/doc/history/history.yyyyMMdd.md` — **하루 한 파일**, 작업이 있는 날만 생성.
 - 구조: ① 한 줄 요약 → ② 번호별 섹션(결정/코드/배포) → ③ 산출물 → ④ 다음 단계·한계.
-- **같은 날 추가 작업은 그날 파일에 `§N` 추가**(새 파일 만들지 않음), 한 줄 요약·산출물 갱신, `doc/history/README.md` 인덱스 표 갱신.
-- 큰 마일스톤·배포 직후 기록. 형식 상세는 [`doc/history/README.md`](./doc/history/README.md).
+- **같은 날 추가 작업은 그날 파일에 `§N` 추가**(새 파일 만들지 않음), 한 줄 요약·산출물 갱신, `../malgn-noti-mng/doc/history/README.md` 인덱스 표 갱신.
+- 큰 마일스톤·배포 직후 기록. 형식 상세는 [`../malgn-noti-mng/doc/history/README.md`](../malgn-noti-mng/doc/history/README.md).
+- 작성·갱신 후 **`malgn-noti-mng` 레포에 커밋·푸시**한다(코드 레포와 분리 관리).
 
 **페이지 정본 (`doc/pages/`)**
 
@@ -274,6 +276,7 @@ UI 컴포넌트와 도메인 타입은 admin과 상당 부분 공유 가능 — 
 - **목적**: 프로젝트 관련 각종 파일을 보관하고, **프로젝트 문서·기록·진행 사항**을 한곳에서 조망·확인한다.
 - **원격 저장소**: <https://github.com/malgnsoft/malgn-noti-mng.git>
 - **보관 내용**: 여러 레포에 공통 적용되는 핵심 참조 문서(디자인·스택·코딩 컨벤션·WBS), 도메인 기획 정본(회원·인증·계약 등), 일자별 작업 이력 등 `malgn-noti`의 `doc/` 트리 전체를 복사·집약한다.
+- **작업 이력 작성처**: 앞으로 일자별 작업 이력(`doc/history/`)은 **이 레포에서 직접 작성·갱신**한다. `malgn-noti`에는 더 이상 신규 history를 만들지 않는다. 상세 규칙은 §7.1 "작업 이력" 참조.
 - **현행화 규칙**: 이 `CLAUDE.md`는 `malgn-noti`의 것과 **항상 동일하게** 유지한다 — `malgn-noti`의 내용을 기본으로 하고 관리 레포 보강(본 절)을 더한 형태. 한쪽을 고치면 다른 쪽도 동일하게 반영한다. 정본 문서가 갱신되면 `malgn-noti-mng/doc/`로도 복사해 현행화한다.
 
 ### 관련 프로젝트
