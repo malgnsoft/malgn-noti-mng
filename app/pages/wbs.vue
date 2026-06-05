@@ -208,8 +208,8 @@ const totalDays = days.length
 }
 .gantt th, .gantt td {
   border: 1px solid #d8d8d8;
-  padding: 0;
   box-sizing: border-box;
+  vertical-align: middle;
 }
 
 /* 좌측 고정 열 */
@@ -222,6 +222,7 @@ const totalDays = days.length
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  vertical-align: middle;
 }
 .c-grp { left: 0; width: 124px; min-width: 124px; max-width: 124px; font-weight: 600; color: #3f3f46; padding-left: 16px; }
 .c-name { left: 124px; width: 220px; min-width: 220px; max-width: 220px; }
@@ -279,7 +280,7 @@ const totalDays = days.length
 /* 항목 행 */
 .item-row .c-grp, .item-row .c-name, .item-row .c-owner, .item-row .c-date, .item-row .c-pct { height: 26px; }
 .item-row.grp-start td { border-top: 1px solid #b8b8b8; }
-.d-cell { width: 24px; min-width: 24px; max-width: 24px; height: 26px; }
+.d-cell { width: 24px; min-width: 24px; max-width: 24px; height: 26px; padding: 0; }
 .d-cell.weekend { background: #fff5f6; }
 .d-cell.today { box-shadow: inset 2px 0 0 rgba(239, 68, 68, 0.5); }
 .d-cell.bar-done { background: #16a34a; }
