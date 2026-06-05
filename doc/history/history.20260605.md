@@ -42,6 +42,13 @@
 - `/board` 프리렌더 라우트 추가. 라이브 검증: `/board` 200, "맑은노티 현황판"·Step 1~5·47.5%/55%/35% 베이크 확인, 대시보드 현황 요약 노출.
 - **WBS 문서 페이지는 별도** — 현황판은 진행률 뷰이고, WBS 정본 문서는 추후 별도 구성.
 
+## 6. BOARD.md 신설 — Step 5 세부 항목 단순화 재정의
+
+- 현황판 Step 5(92개 세부 task)를 **큰 카테고리로 묶어 단순화**한 정본 `doc/BOARD.md` 작성. 문서 뷰어에서 [`/docs/board`](https://malgn-noti-mng.pages.dev/docs/board)로 노출.
+- 대상 4개 영역 재정의: **API 서버 + API 엔드포인트 → "API 백엔드"로 통합**(6 카테고리), **사용자단 ↔ API 연동**(6 카테고리), **관리자단 화면**(6 카테고리). 각 카테고리에 종합 상태(✅/🟡/⚪) + 기존 task id 매핑(추적용).
+- 그 외 영역(설계·준비, 사용자단 목업 UI, 통합·배포)은 현 상태만 참고 표로 기록.
+- **WBS 상세(작업 단위·일정·의존성)는 간트 차트로 별도 구성 예정** — BOARD.md는 카테고리 단위 현황 정본, 세부 진척은 향후 간트 WBS가 정본.
+
 ---
 
 ## 산출물
@@ -51,6 +58,7 @@
 - **커밋**: 문서 집약 `0db385a` · history 작성처 변경 `bebb5b8` · 앱 스캐폴딩 `5ac81c6` · 프리렌더 대소문자 fix(이번).
 - **주요 파일**: `nuxt.config.ts`(프리렌더 라우트 열거 + apiBaseUrl), `content.config.ts`(doc/ 매핑), `app/pages/{index,board,docs/index,docs/[...slug],history/index}.vue`, `app/layouts/default.vue`, `app/composables/{useDocs,useWbs}.ts`, `app/components/AppWbsOverview.vue`, `package.json`(@nuxt/content + better-sqlite3 + pnpm.onlyBuiltDependencies).
 - **현황판**: <https://malgn-noti-mng.pages.dev/board> (맑은노티 현황판, 읽기 전용, `GET /wbs` 라이브).
+- **현황판 정본 문서**: [`doc/BOARD.md`](../BOARD.md) — Step 5 세부 항목 단순화 재정의 (`/docs/board`).
 
 ## 다음 단계 / 알려진 한계
 
