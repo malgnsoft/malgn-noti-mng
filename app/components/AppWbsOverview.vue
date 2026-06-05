@@ -1,7 +1,7 @@
 <template>
   <div class="wbs-overview">
-    <!-- 전체 진행률 (+ 옆 바로가기 슬롯) -->
-    <div :class="['hero-row', { 'hero-row--split': hasAside }]">
+    <!-- 전체 진행률 (+ 완료/진행 중 카운터 또는 바로가기 슬롯) -->
+    <div :class="['hero-row', { 'hero-row--split': hasAside, 'hero-row--counters': showCounters }]">
       <div class="hero-card">
         <div class="hero-card-head">
           <div>
@@ -16,7 +16,27 @@
           <div class="hero-bar-fill" :style="{ width: weightedAverage + '%' }" />
         </div>
       </div>
-      <div v-if="hasAside" class="hero-aside">
+
+      <template v-if="showCounters">
+        <div class="hero-mini-card">
+          <div class="hero-mini-head">
+            <span class="hero-dot hero-dot--done" />
+            <p class="hero-label">완료</p>
+          </div>
+          <p class="hero-mini-value">
+            {{ done }}<span class="hero-mini-total">/{{ total }}</span>
+          </p>
+        </div>
+        <div class="hero-mini-card">
+          <div class="hero-mini-head">
+            <span class="hero-dot hero-dot--prog" />
+            <p class="hero-label">진행 중</p>
+          </div>
+          <p class="hero-mini-value">{{ inProgress }}</p>
+        </div>
+      </template>
+
+      <div v-else-if="hasAside" class="hero-aside">
         <slot name="aside" />
       </div>
     </div>
@@ -83,16 +103,24 @@
 <script setup lang="ts">
 import type { WbsStage } from '~/composables/useWbs'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   stages: WbsStage[]
   weightedAverage: number
   variant?: 'boxes' | 'rows'
+  done?: number
+  inProgress?: number
+  total?: number
 }>(), {
   variant: 'boxes',
+  done: undefined,
+  inProgress: undefined,
+  total: undefined,
 })
 
 const slots = useSlots()
 const hasAside = computed(() => !!slots.aside)
+// 완료/진행 중 카운터 — done·total 이 주어질 때만 노출(현황판).
+const showCounters = computed(() => props.done != null && props.total != null)
 </script>
 
 <style scoped>
@@ -123,8 +151,47 @@ const hasAside = computed(() => !!slots.aside)
 .hero-aside { display: flex; }
 .hero-aside > * { width: 100%; }
 
+/* 전체 진행률 + 완료/진행 중 카운터 (현황판) */
+.hero-row--counters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.hero-mini-card {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hero-mini-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+.hero-dot--done { background: #10b981; }
+.hero-dot--prog { background: #f59e0b; }
+.hero-mini-value {
+  margin-top: 4px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+}
+.hero-mini-total { font-size: 16px; color: #a1a1aa; }
+
 @media (max-width: 760px) {
   .hero-row--split { grid-template-columns: 1fr; }
+  .hero-row--counters { grid-template-columns: 1fr 1fr; }
+  .hero-row--counters .hero-card { grid-column: 1 / -1; }
 }
 .hero-card-head {
   display: flex;
