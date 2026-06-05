@@ -23,6 +23,7 @@ history.yyyyMMdd.md
 
 | 날짜 | 요약 |
 | --- | --- |
+| [2026-06-05](./history.20260605.md) | **malgn-noti-mng 관리 레포 신설** — GitHub 연결 + `malgn-noti/doc/` 트리 집약(공통·도메인·이력) + CLAUDE.md 병합·현행화(이력 작성처를 본 레포로 변경, malgn-noti `doc/history/` 삭제) + malgn-noti 동일 스택(Nuxt 3 + Tailwind v4 + Nuxt UI v3) + `@nuxt/content` 기반 **문서/이력 브라우저 앱** 스캐폴딩(대시보드·문서·이력 타임라인) + **Cloudflare Pages 정적 배포**(<https://malgn-noti-mng.pages.dev>, 프리렌더 라우트 직접 열거로 마크다운 내부 링크 크롤·대소문자·파일명 점 이슈 해결, 57 라우트 라이브 200) |
 | [2026-05-11](./history.20260511.md) | 프로젝트 착수 — 세 레포 부트스트랩 + 첫 GitHub 푸시 + Cloudflare 첫 배포 + 시안 GNB 도입 |
 | [2026-05-12](./history.20260512.md) | 시안 정밀 매칭 — 콘텐츠 폭 1200px 통일, Utility Bar 분리, 메뉴 8개, 문서 3종(`FRONTEND`/`STACK`/`DESIGN`) |
 | [2026-05-13](./history.20260513.md) | Smart Placement + 발송 페이지 풍부화 — 공용 컴포넌트 21종, `useChannelMeta`, SMS/알림톡 발송 페이지 |
