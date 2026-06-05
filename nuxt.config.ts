@@ -23,7 +23,8 @@ function collectDocRoutes(dir: string, base = ''): string[] {
   return out
 }
 
-const prerenderRoutes = ['/', '/board', '/docs', '/history', ...collectDocRoutes(docDir)]
+// '/' 와 '/board' 는 런타임에 D1(/api/board)을 조회하므로 프리렌더하지 않고 SSR(Functions).
+const prerenderRoutes = ['/docs', '/history', ...collectDocRoutes(docDir)]
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
@@ -41,20 +42,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css', '~/assets/css/prose.css'],
 
-  // 정적 배포(Cloudflare Pages)용 프리렌더 — 라우트를 직접 열거(크롤 끔).
+  // Cloudflare Pages (Functions/SSR) — /api/board 가 D1 바인딩(DB)을 런타임 조회.
+  // 문서·이력 페이지는 프리렌더, '/'·'/board' 는 SSR.
   nitro: {
+    preset: 'cloudflare-pages',
     prerender: {
       crawlLinks: false,
       failOnError: false,
       routes: prerenderRoutes
-    }
-  },
-
-  // 현황판(/board)·대시보드가 조회하는 malgn-noti-api 공개 WBS 엔드포인트.
-  // NUXT_PUBLIC_API_BASE_URL 로 override 가능.
-  runtimeConfig: {
-    public: {
-      apiBaseUrl: 'https://malgn-noti-api.malgnsoft.workers.dev'
     }
   },
 

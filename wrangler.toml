@@ -1,0 +1,10 @@
+name = "malgn-noti-mng"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# 현황판 데이터 DB (Cloudflare D1)
+[[d1_databases]]
+binding = "DB"
+database_name = "malgn-noti-project"
+database_id = "3c8c37e3-6125-4b4e-baf9-0267fa2f23b7"

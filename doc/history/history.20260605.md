@@ -52,6 +52,15 @@
 - **(후속) `/board`는 원래 시각적 보드로 되돌림** — 사용자가 시각적 현황판을 선호. `/board`는 `GET /wbs` 기반 보드(전체 진행률 + 단계 행 + 상세) 유지, BOARD.md 정본은 `/docs/board`로 분리.
 - **(후속) BOARD.md를 현황판 전체 미러로 현행화** — WBS.md처럼 현황판의 **모든 내용**(진행률 스냅샷 + 전체 5단계 155 태스크 상세 표 + Step 5 단순화 카테고리 부록)을 담도록 `GET /wbs` 라이브 데이터에서 생성. 데이터 기준 2026-06-04 / 문서 현행화 2026-06-05.
 
+## 7. 현황판 데이터 자립 — 자체 D1 + `/api/board` (외부 `GET /wbs` 의존 제거)
+
+- 외부 `malgn-noti-api`의 공개 `GET /wbs` 의존을 끊고, **malgn-noti-mng 자체 Cloudflare D1**(`malgn-noti-project`, id `3c8c37e3…`) + 내부 API `/api/board`로 전환.
+- **스키마**(`server/db/schema.sql`): `board_meta`(프로젝트·현행화일) + `stage`(단계) + `task`(작업) 3 테이블. **시드**(`server/db/seed.sql`): 5단계 115 태스크(Step 5는 단순화 카테고리 반영) — 원격 D1에 적용.
+- **서버 라우트** `server/api/board.get.ts`: D1(`DB` 바인딩) 조회 → `{ data: WbsDocument }` 조립. D1 없는 로컬 dev는 `server/utils/boardSeed.ts` 폴백.
+- **배포 전환**: 정적 `nuxt generate` → **Cloudflare Pages Functions(SSR)**. `nitro.preset='cloudflare-pages'`, `wrangler.toml`에 D1 바인딩(`DB`). `/`·`/board`는 런타임 D1 조회(SSR), 문서·이력은 프리렌더 유지.
+- `useWbs`는 `/api/board` 조회로 변경(외부 baseURL·클라이언트 단순화 로직 제거 — 단순화는 D1 시드에 반영).
+- 검증: `/api/board` 200 + D1 값 변경(`last_updated`)이 즉시 반영됨을 확인(폴백 아님). `/`·`/board`·문서·이력 전부 200.
+
 ---
 
 ## 산출물
