@@ -7,6 +7,32 @@
       </p>
     </section>
 
+    <!-- 프로젝트 개요 (목표 · 기획 방향) -->
+    <section class="overview">
+      <div class="overview-head">
+        <h2 class="overview-title">프로젝트 개요</h2>
+        <NuxtLink to="/docs/wbs" class="overview-more">WBS 문서 →</NuxtLink>
+      </div>
+      <div class="overview-grid">
+        <div class="ov-card">
+          <p class="ov-label">목표</p>
+          <p class="ov-goal">
+            맑은소프트가 <b>NHN Cloud Notification Hub</b>를 래핑하여, 고객사가 자체 브랜드로 메시지를 발송·관리하는
+            <b>멀티 테넌트 SaaS “맑은 메시징”</b>을 구축한다.
+          </p>
+          <div class="ov-channels">
+            <span v-for="ch in channels" :key="ch" class="ov-chip">{{ ch }}</span>
+          </div>
+        </div>
+        <div class="ov-card">
+          <p class="ov-label">기획 방향</p>
+          <ul class="ov-list">
+            <li v-for="d in directions" :key="d">{{ d }}</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <!-- 프로젝트 현황 (현황판 요약) -->
     <section class="board-summary">
       <div class="board-summary-head">
@@ -88,6 +114,15 @@ const shortcuts = [
 ]
 
 const stripProto = (u: string) => u.replace(/^https?:\/\//, '')
+
+const channels = ['SMS / LMS / MMS', 'RCS', '알림톡 / 친구톡', 'Email', 'Push', '복합 (Flow)']
+const directions = [
+  '멀티 테넌트 SaaS — 고객사(테넌트)별 자체 브랜드 · 발송 한도 · 크레딧 과금',
+  '5채널 + 복합(Flow) 폴백·순서 발송 (예: 알림톡 → 친구톡 → LMS)',
+  '모든 발송은 백엔드(malgn-noti-api) 경유 — NHN 키 비노출 · 과금 · 감사 통제',
+  '핵심 도메인: 발송 · 캠페인 · 이력/통계 · 주소록 · 발신정보 · 템플릿 · 크레딧 · 계정/인증 · 문의',
+  '디자인: Relay-inspired 저밀도 시스템 · 스택: Nuxt 3 + Tailwind v4 + Nuxt UI v3',
+]
 
 const {
   doc: wbsDoc,
@@ -178,6 +213,23 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
   flex-shrink: 0;
 }
 .link:hover .link-ext { color: var(--accent-ink); }
+
+/* 프로젝트 개요 */
+.overview { margin-bottom: 44px; }
+.overview-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.overview-title { font-size: 16px; font-weight: 700; color: var(--ink-900); }
+.overview-more { font-size: 13px; color: var(--accent-ink); }
+.overview-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 780px) { .overview-grid { grid-template-columns: 1fr; } }
+.ov-card { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.ov-label { font-size: 12px; font-weight: 600; color: var(--ink-400); margin-bottom: 8px; }
+.ov-goal { font-size: 14px; line-height: 1.65; color: var(--ink-700); }
+.ov-goal b { font-weight: 600; color: var(--ink-900); }
+.ov-channels { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.ov-chip { font-size: 12px; font-weight: 500; color: var(--ink-700); background: var(--ink-50); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.ov-list { display: flex; flex-direction: column; gap: 8px; }
+.ov-list li { position: relative; padding-left: 14px; font-size: 13px; line-height: 1.55; color: var(--ink-700); }
+.ov-list li::before { content: ""; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
 
 .board-summary {
   margin-bottom: 44px;
