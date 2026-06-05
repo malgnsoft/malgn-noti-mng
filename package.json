@@ -9,15 +9,19 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:generate": "drizzle-kit generate",
+    "db:apply": "wrangler d1 migrations apply malgn-noti-project --remote",
+    "db:seed": "wrangler d1 execute malgn-noti-project --remote --file=server/db/seed.sql"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.0",
     "@iconify-json/lucide": "^1.2.0",
     "@nuxt/content": "^3.0.0",
     "@nuxt/ui": "^3.0.0",
-    "better-sqlite3": "^12.5.0",
     "@pinia/nuxt": "^0.5.5",
+    "better-sqlite3": "^12.5.0",
+    "drizzle-orm": "0.45.2",
     "nuxt": "^3.16.0",
     "pinia": "^2.2.0",
     "vue": "^3.5.0",
@@ -25,6 +29,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.7.0",
+    "drizzle-kit": "0.31.10",
     "eslint": "^9.13.0",
     "typescript": "^5.6.0",
     "vue-tsc": "^2.1.0"

@@ -60,6 +60,7 @@
 - **배포 전환**: 정적 `nuxt generate` → **Cloudflare Pages Functions(SSR)**. `nitro.preset='cloudflare-pages'`, `wrangler.toml`에 D1 바인딩(`DB`). `/`·`/board`는 런타임 D1 조회(SSR), 문서·이력은 프리렌더 유지.
 - `useWbs`는 `/api/board` 조회로 변경(외부 baseURL·클라이언트 단순화 로직 제거 — 단순화는 D1 시드에 반영).
 - 검증: `/api/board` 200 + D1 값 변경(`last_updated`)이 즉시 반영됨을 확인(폴백 아님). `/`·`/board`·문서·이력 전부 200.
+- **(후속) Drizzle ORM 도입** — 브라우저↔D1 직결은 불가(서버 한 겹 필수)임을 정리하고, raw SQL 대신 **Drizzle**로 D1 직접 쿼리. `server/db/schema.ts`(스키마 정본) + `server/utils/db.ts`(`useDb()` 공용) + `board.get.ts` 리팩터. 마이그레이션은 `drizzle-kit`(`server/db/migrations/`)으로 일원화(수기 `schema.sql` 제거). `db:generate`/`db:apply`/`db:seed` 스크립트 추가.
 
 ---
 

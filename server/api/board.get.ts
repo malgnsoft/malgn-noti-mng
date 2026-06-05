@@ -1,51 +1,19 @@
+import { asc, eq } from 'drizzle-orm'
 import type { WbsDocument, WbsStage, WbsTask, WbsStatus } from '~/composables/useWbs'
+import { boardMeta, stage, task } from '../db/schema'
 
-// 현황판 데이터 API — Cloudflare D1(malgn-noti-project) 의 board_meta/stage/task 를 조립해 반환.
-// D1 바인딩이 없는 로컬 dev 에서는 시드(boardSeed, server/utils 자동 임포트)로 폴백.
-
-interface D1Like {
-  prepare(query: string): {
-    first<T = unknown>(): Promise<T | null>
-    all<T = unknown>(): Promise<{ results: T[] }>
-  }
-}
-
-interface StageRow {
-  id: string
-  no: string
-  name: string
-  emoji: string | null
-  summary: string | null
-  weight: number
-  progress: number
-}
-interface TaskRow {
-  id: string
-  stage_id: string
-  grp: string | null
-  title: string
-  status: string
-  owner: string | null
-  note: string | null
-  target_date: string | null
-  completion_date: string | null
-  href: string | null
-}
+// 현황판 데이터 API — D1(malgn-noti-project)을 Drizzle ORM 으로 직접 조회해 조립.
+// D1 바인딩이 없는 로컬 dev 는 시드(boardSeed, server/utils 자동 임포트)로 폴백.
 
 export default defineEventHandler(async (event): Promise<{ data: WbsDocument }> => {
-  const db = (event.context.cloudflare?.env as { DB?: D1Like } | undefined)?.DB
-
-  // 로컬 dev (D1 바인딩 없음) → 시드 폴백
+  const db = useDb(event)
   if (!db) {
     return { data: boardSeed }
   }
 
-  const meta = await db
-    .prepare('SELECT project_name, last_updated FROM board_meta WHERE id = 1')
-    .first<{ project_name: string, last_updated: string }>()
-
-  const stageRows = (await db.prepare('SELECT * FROM stage ORDER BY sort').all<StageRow>()).results
-  const taskRows = (await db.prepare('SELECT * FROM task ORDER BY sort').all<TaskRow>()).results
+  const [meta] = await db.select().from(boardMeta).where(eq(boardMeta.id, 1)).limit(1)
+  const stageRows = await db.select().from(stage).orderBy(asc(stage.sort))
+  const taskRows = await db.select().from(task).orderBy(asc(task.sort))
 
   const stages: WbsStage[] = stageRows.map(s => ({
     id: s.id,
@@ -56,7 +24,7 @@ export default defineEventHandler(async (event): Promise<{ data: WbsDocument }> 
     weight: s.weight,
     progress: s.progress,
     tasks: taskRows
-      .filter(t => t.stage_id === s.id)
+      .filter(t => t.stageId === s.id)
       .map((t): WbsTask => ({
         id: t.id,
         group: t.grp ?? undefined,
@@ -64,16 +32,16 @@ export default defineEventHandler(async (event): Promise<{ data: WbsDocument }> 
         status: t.status as WbsStatus,
         owner: t.owner ?? '',
         note: t.note ?? undefined,
-        targetDate: t.target_date ?? undefined,
-        completionDate: t.completion_date ?? undefined,
+        targetDate: t.targetDate ?? undefined,
+        completionDate: t.completionDate ?? undefined,
         href: t.href ?? undefined,
       })),
   }))
 
   return {
     data: {
-      projectName: meta?.project_name ?? '맑은 메시징',
-      lastUpdated: meta?.last_updated ?? '—',
+      projectName: meta?.projectName ?? '맑은 메시징',
+      lastUpdated: meta?.lastUpdated ?? '—',
       stages,
     },
   }
