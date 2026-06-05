@@ -1,18 +1,23 @@
 <template>
   <div class="wbs-overview">
-    <!-- 전체 진행률 -->
-    <div class="hero-card">
-      <div class="hero-card-head">
-        <div>
-          <p class="hero-label">전체 진행률</p>
-          <p class="hero-value">
-            {{ weightedAverage }}<span class="hero-value-unit">%</span>
-          </p>
+    <!-- 전체 진행률 (+ 옆 바로가기 슬롯) -->
+    <div :class="['hero-row', { 'hero-row--split': hasAside }]">
+      <div class="hero-card">
+        <div class="hero-card-head">
+          <div>
+            <p class="hero-label">전체 진행률</p>
+            <p class="hero-value">
+              {{ weightedAverage }}<span class="hero-value-unit">%</span>
+            </p>
+          </div>
+          <p class="hero-note">가중평균 · {{ stages.length }}단계</p>
         </div>
-        <p class="hero-note">가중평균 · {{ stages.length }}단계</p>
+        <div class="hero-bar">
+          <div class="hero-bar-fill" :style="{ width: weightedAverage + '%' }" />
+        </div>
       </div>
-      <div class="hero-bar">
-        <div class="hero-bar-fill" :style="{ width: weightedAverage + '%' }" />
+      <div v-if="hasAside" class="hero-aside">
+        <slot name="aside" />
       </div>
     </div>
 
@@ -85,6 +90,9 @@ withDefaults(defineProps<{
 }>(), {
   variant: 'boxes',
 })
+
+const slots = useSlots()
+const hasAside = computed(() => !!slots.aside)
 </script>
 
 <style scoped>
@@ -94,12 +102,29 @@ withDefaults(defineProps<{
   gap: 12px;
 }
 
-/* ── 전체 진행률 ── */
+/* ── 전체 진행률 (+ 옆 바로가기) ── */
+.hero-row--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  align-items: stretch;
+}
 .hero-card {
   background: #fff;
   border: 1px solid #e4e4e7;
   border-radius: 12px;
   padding: 20px;
+}
+.hero-row--split .hero-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.hero-aside { display: flex; }
+.hero-aside > * { width: 100%; }
+
+@media (max-width: 760px) {
+  .hero-row--split { grid-template-columns: 1fr; }
 }
 .hero-card-head {
   display: flex;

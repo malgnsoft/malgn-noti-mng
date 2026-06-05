@@ -7,33 +7,6 @@
       </p>
     </section>
 
-    <!-- 바로가기 -->
-    <section class="shortcuts">
-      <div class="shortcuts-head">
-        <h2 class="shortcuts-title">바로가기</h2>
-      </div>
-      <div class="shortcuts-grid">
-        <a
-          v-for="link in shortcuts"
-          :key="link.url"
-          :href="link.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="shortcut-card"
-        >
-          <span class="shortcut-ico"><UIcon :name="link.icon" /></span>
-          <span class="shortcut-body">
-            <span class="shortcut-label">
-              {{ link.label }}
-              <UIcon name="i-lucide-arrow-up-right" class="shortcut-ext" />
-            </span>
-            <span class="shortcut-host">{{ link.host }}</span>
-            <span class="shortcut-desc">{{ link.desc }}</span>
-          </span>
-        </a>
-      </div>
-    </section>
-
     <!-- 프로젝트 현황 (현황판 요약) -->
     <section class="board-summary">
       <div class="board-summary-head">
@@ -47,7 +20,21 @@
         v-else
         :stages="stages"
         :weighted-average="weightedAverage"
-      />
+      >
+        <template #aside>
+          <div class="links-card">
+            <p class="links-title">바로가기</p>
+            <ul class="links">
+              <li v-for="link in shortcuts" :key="link.url">
+                <a :href="link.url" target="_blank" rel="noopener noreferrer" class="link">
+                  <span class="link-label">{{ link.label }}</span>
+                  <UIcon name="i-lucide-arrow-up-right" class="link-ext" />
+                </a>
+              </li>
+            </ul>
+          </div>
+        </template>
+      </AppWbsOverview>
     </section>
 
     <div class="grid">
@@ -91,41 +78,11 @@
 
 <script setup lang="ts">
 const shortcuts = [
-  {
-    label: '사용자단 콘솔',
-    url: 'https://malgn-noti.pages.dev',
-    host: 'malgn-noti.pages.dev',
-    desc: '고객(테넌트) 사용자 웹 콘솔',
-    icon: 'i-lucide-monitor',
-  },
-  {
-    label: '관리자단 콘솔',
-    url: 'https://malgn-noti-admin.pages.dev',
-    host: 'malgn-noti-admin.pages.dev',
-    desc: '맑은소프트 운영자 콘솔',
-    icon: 'i-lucide-shield',
-  },
-  {
-    label: 'API 서버',
-    url: 'https://malgn-noti-api.malgnsoft.workers.dev',
-    host: 'malgn-noti-api.malgnsoft.workers.dev',
-    desc: '백엔드 API (Cloudflare Workers)',
-    icon: 'i-lucide-server',
-  },
-  {
-    label: 'API 문서',
-    url: 'https://malgn-noti-api.malgnsoft.workers.dev/doc',
-    host: 'malgn-noti-api…/doc',
-    desc: 'OpenAPI 3.1 · Scalar UI',
-    icon: 'i-lucide-book-open',
-  },
-  {
-    label: 'GitHub',
-    url: 'https://github.com/malgnsoft/malgn-noti-mng',
-    host: 'github.com/malgnsoft',
-    desc: '소스 저장소 (malgnsoft)',
-    icon: 'i-lucide-github',
-  },
+  { label: '사용자단 콘솔', url: 'https://malgn-noti.pages.dev' },
+  { label: '관리자단 콘솔', url: 'https://malgn-noti-admin.pages.dev' },
+  { label: 'API 서버', url: 'https://malgn-noti-api.malgnsoft.workers.dev' },
+  { label: 'API 문서', url: 'https://malgn-noti-api.malgnsoft.workers.dev/doc' },
+  { label: 'GitHub', url: 'https://github.com/malgnsoft/malgn-noti-mng' },
 ]
 
 const {
@@ -158,85 +115,46 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
 .hero {
   margin-bottom: 32px;
 }
-.shortcuts {
-  margin-bottom: 44px;
-}
-.shortcuts-head {
-  margin-bottom: 14px;
-}
-.shortcuts-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink-900);
-}
-.shortcuts-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-}
-.shortcut-card {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
+/* 전체 진행률 옆 간단 바로가기 */
+.links-card {
+  height: 100%;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 12px;
-  transition: border-color .15s, box-shadow .15s;
-}
-.shortcut-card:hover {
-  border-color: var(--ink-300);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-.shortcut-ico {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: var(--ink-50);
-  color: var(--ink-700);
-  font-size: 17px;
-}
-.shortcut-body {
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
 }
-.shortcut-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-900);
-}
-.shortcut-ext {
-  width: 13px;
-  height: 13px;
-  color: var(--ink-300);
-}
-.shortcut-host {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.shortcut-desc {
+.links-title {
   font-size: 12px;
+  font-weight: 600;
   color: var(--ink-400);
-  line-height: 1.4;
+  margin-bottom: 6px;
 }
-
-@media (max-width: 900px) {
-  .shortcuts-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.links {
+  display: flex;
+  flex-direction: column;
 }
-@media (max-width: 560px) {
-  .shortcuts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-800);
+  border-top: 1px solid var(--ink-50);
 }
+.links li:first-child .link { border-top: 0; }
+.link:hover { color: var(--accent-ink); }
+.link-ext {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-300);
+  flex-shrink: 0;
+}
+.link:hover .link-ext { color: var(--accent-ink); }
 
 .board-summary {
   margin-bottom: 44px;
