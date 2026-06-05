@@ -23,7 +23,7 @@ function collectDocRoutes(dir: string, base = ''): string[] {
   return out
 }
 
-const prerenderRoutes = ['/', '/docs', '/history', ...collectDocRoutes(docDir)]
+const prerenderRoutes = ['/', '/board', '/docs', '/history', ...collectDocRoutes(docDir)]
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
@@ -47,6 +47,14 @@ export default defineNuxtConfig({
       crawlLinks: false,
       failOnError: false,
       routes: prerenderRoutes
+    }
+  },
+
+  // 현황판(/board)·대시보드가 조회하는 malgn-noti-api 공개 WBS 엔드포인트.
+  // NUXT_PUBLIC_API_BASE_URL 로 override 가능.
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: 'https://malgn-noti-api.malgnsoft.workers.dev'
     }
   },
 

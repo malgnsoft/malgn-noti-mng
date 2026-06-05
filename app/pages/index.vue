@@ -7,6 +7,24 @@
       </p>
     </section>
 
+    <!-- 프로젝트 현황 (현황판 요약) -->
+    <section class="board-summary">
+      <div class="board-summary-head">
+        <h2 class="board-summary-title">프로젝트 현황</h2>
+        <NuxtLink to="/board" class="board-summary-more">현황판 전체 보기 →</NuxtLink>
+      </div>
+
+      <div v-if="wbsPending" class="board-summary-state">현황 불러오는 중…</div>
+      <div v-else-if="wbsError || !wbsDoc" class="board-summary-state">현황을 불러올 수 없습니다.</div>
+      <AppWbsOverview
+        v-else
+        :stages="stages"
+        :weighted-average="weightedAverage"
+        :total-counts="totalCounts"
+        :all-tasks="allTasks"
+      />
+    </section>
+
     <div class="grid">
       <section class="col">
         <div class="col-head">
@@ -47,6 +65,16 @@
 </template>
 
 <script setup lang="ts">
+const {
+  doc: wbsDoc,
+  stages,
+  allTasks,
+  totalCounts,
+  weightedAverage,
+  pending: wbsPending,
+  error: wbsError,
+} = useWbs()
+
 const { data: all } = await useAllDocs()
 
 const docs = computed(() => (all.value ?? []).filter(d => !isHistory(d.path)))
@@ -67,7 +95,34 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
   padding: 40px 24px 64px;
 }
 .hero {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+}
+.board-summary {
+  margin-bottom: 44px;
+}
+.board-summary-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.board-summary-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+.board-summary-more {
+  font-size: 13px;
+  color: var(--accent-ink);
+}
+.board-summary-state {
+  padding: 28px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-400);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 .hero-title {
   font-size: 28px;
