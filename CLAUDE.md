@@ -271,10 +271,13 @@ UI 컴포넌트와 도메인 타입은 admin과 상당 부분 공유 가능 — 
 
 ## 11. 프로젝트 문서 관리 레포 (malgn-noti-mng)
 
-[`malgn-noti-mng`](../malgn-noti-mng)는 맑은노티(맑은 메시징) 프로젝트를 **관리**하는 별도 레포다. 코드를 두지 않고 프로젝트 운영에 필요한 문서·기록을 집약한다.
+[`malgn-noti-mng`](../malgn-noti-mng)는 맑은노티(맑은 메시징) 프로젝트를 **관리**하는 별도 레포다. 프로젝트 운영에 필요한 문서·기록을 집약하고, 이를 웹에서 조망하는 **문서/이력 브라우저 앱**으로 구현한다.
 
 - **목적**: 프로젝트 관련 각종 파일을 보관하고, **프로젝트 문서·기록·진행 사항**을 한곳에서 조망·확인한다.
 - **원격 저장소**: <https://github.com/malgnsoft/malgn-noti-mng.git>
+- **구현 스택**: `malgn-noti`와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3, pnpm, Pinia, ESLint) + **@nuxt/content**(`doc/` 마크다운 렌더링). 디자인 시스템(`app/assets/css/main.css`·`app/app.config.ts`)도 그대로 이식해 형제 앱과 시각 일관성 유지. `@nuxtjs/tailwindcss` 미설치 원칙 동일.
+  - 화면: `/`(대시보드) · `/docs`(문서 목록·렌더) · `/history`(작업 이력 타임라인). 콘텐츠 소스는 `content.config.ts`에서 `doc/` 트리로 매핑.
+  - 개발: `pnpm install` → `pnpm dev`. `better-sqlite3`는 `@nuxt/content`의 SQLite 어댑터 — `package.json`의 `pnpm.onlyBuiltDependencies`로 네이티브 빌드 허용 설정됨.
 - **보관 내용**: 여러 레포에 공통 적용되는 핵심 참조 문서(디자인·스택·코딩 컨벤션·WBS), 도메인 기획 정본(회원·인증·계약 등), 일자별 작업 이력 등 `malgn-noti`의 `doc/` 트리 전체를 복사·집약한다.
 - **작업 이력 작성처**: 앞으로 일자별 작업 이력(`doc/history/`)은 **이 레포에서 직접 작성·갱신**한다. `malgn-noti`에는 더 이상 신규 history를 만들지 않는다. 상세 규칙은 §7.1 "작업 이력" 참조.
 - **현행화 규칙**: 이 `CLAUDE.md`는 `malgn-noti`의 것과 **항상 동일하게** 유지한다 — `malgn-noti`의 내용을 기본으로 하고 관리 레포 보강(본 절)을 더한 형태. 한쪽을 고치면 다른 쪽도 동일하게 반영한다. 정본 문서가 갱신되면 `malgn-noti-mng/doc/`로도 복사해 현행화한다.
