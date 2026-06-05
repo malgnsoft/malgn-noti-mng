@@ -13,14 +13,16 @@ function toDate(iso: string) {
 function toIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-function md(iso: string) {
+function md(iso?: string) {
+  if (!iso) return '—'
   const [, m, d] = iso.split('-').map(Number)
   return `${m}/${d}`
 }
 
-// ── 날짜 열(일 단위) 생성 ──────────────────────────────────
-const minIso = wbsGantt.reduce((a, x) => (x.start < a ? x.start : a), wbsGantt[0]!.start)
-const maxIso = wbsGantt.reduce((a, x) => (x.end > a ? x.end : a), wbsGantt[0]!.end)
+// ── 날짜 열(일 단위) 생성 — 날짜 있는 항목만으로 범위 산정 ──
+const dated = wbsGantt.filter(x => x.start && x.end)
+const minIso = dated.reduce((a, x) => (x.start! < a ? x.start! : a), dated[0]!.start!)
+const maxIso = dated.reduce((a, x) => (x.end! > a ? x.end! : a), dated[0]!.end!)
 
 interface Day { iso: string, day: number, month: number, dow: number, weekend: boolean, today: boolean }
 const days: Day[] = (() => {
@@ -54,6 +56,7 @@ interface ItemRow {
   type: 'item'
   it: GanttItem
   showGroup: boolean
+  hasBar: boolean
   startIdx: number
   endIdx: number
   doneDays: number
@@ -70,11 +73,12 @@ const rows: Row[] = (() => {
       curStep = it.step
       curGroup = null
     }
-    const startIdx = isoIndex.get(it.start) ?? 0
-    const endIdx = isoIndex.get(it.end) ?? startIdx
-    const span = endIdx - startIdx + 1
+    const startIdx = it.start ? (isoIndex.get(it.start) ?? -1) : -1
+    const endIdx = it.end ? (isoIndex.get(it.end) ?? -1) : -1
+    const hasBar = startIdx >= 0 && endIdx >= 0
+    const span = hasBar ? endIdx - startIdx + 1 : 0
     const doneDays = Math.round(span * it.progress / 100)
-    out.push({ type: 'item', it, showGroup: it.group !== curGroup, startIdx, endIdx, doneDays })
+    out.push({ type: 'item', it, showGroup: it.group !== curGroup, hasBar, startIdx, endIdx, doneDays })
     curGroup = it.group
   }
   return out
@@ -82,7 +86,7 @@ const rows: Row[] = (() => {
 
 // 셀 상태: 'done' | 'todo' | '' (막대 아님)
 function cellState(row: ItemRow, ci: number): 'done' | 'todo' | '' {
-  if (ci < row.startIdx || ci > row.endIdx) return ''
+  if (!row.hasBar || ci < row.startIdx || ci > row.endIdx) return ''
   return (ci - row.startIdx) < row.doneDays ? 'done' : 'todo'
 }
 
@@ -146,9 +150,10 @@ const totalDays = days.length
             </tr>
             <tr v-else class="item-row" :class="{ 'grp-start': row.showGroup }">
               <td class="c-grp">{{ row.showGroup ? row.it.group : '' }}</td>
-              <td class="c-name">
+              <td class="c-name" :title="row.it.note ? row.it.name + ' — ' + row.it.note : row.it.name">
                 <a v-if="row.it.href" :href="row.it.href" target="_blank" rel="noopener noreferrer" class="name-link">{{ row.it.name }}</a>
                 <span v-else>{{ row.it.name }}</span>
+                <span v-if="row.it.note" class="note-dot" />
               </td>
               <td class="c-owner">{{ row.it.owner }}</td>
               <td class="c-date">{{ md(row.it.start) }}</td>
@@ -225,6 +230,7 @@ const totalDays = days.length
 .c-date:nth-of-type(5) { left: 450px; }
 .c-pct { left: 504px; width: 56px; min-width: 56px; max-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .name-link { color: #2563eb; text-decoration: underline; }
+.note-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; margin-left: 4px; vertical-align: middle; }
 
 /* 헤더 */
 .gantt thead th {

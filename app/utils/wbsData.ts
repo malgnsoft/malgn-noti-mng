@@ -6,8 +6,8 @@ export interface GanttItem {
   group: string
   name: string
   owner: string
-  start: string
-  end: string
+  start?: string // 미정이면 생략(간트 막대 없음)
+  end?: string
   progress: number
   note?: string
   href?: string
@@ -39,27 +39,28 @@ export const wbsGantt: GanttItem[] = [
   { step: 1, group: '환경 셋팅', name: '관리자단 부트스트랩', owner: O, start: '2026-05-11', end: '2026-05-11', progress: 100 },
   { step: 1, group: '환경 셋팅', name: 'API 서버 부트스트랩', owner: O, start: '2026-05-11', end: '2026-05-11', progress: 100 },
 
-  // ── Step 3 · 서비스 기획 (화면설계) ─────────────────────
-  { step: 3, group: 'Front', name: '프로토타입으로 대체', owner: O, start: '2026-05-13', end: '2026-05-22', progress: 70 },
-  { step: 3, group: 'Front', name: '서비스 메뉴 콘텐츠', owner: O, start: '2026-05-26', end: '2026-06-06', progress: 0 },
-  { step: 3, group: 'Front', name: '운영가이드', owner: O, start: '2026-05-26', end: '2026-06-06', progress: 0 },
-  { step: 3, group: 'BackOffice 1차', name: '공통 · 로그인 · 계정 관리', owner: O, start: '2026-05-18', end: '2026-05-22', progress: 60 },
-  { step: 3, group: 'BackOffice 1차', name: '회원 · 고객사 관리', owner: O, start: '2026-05-18', end: '2026-05-22', progress: 60 },
-  { step: 3, group: 'BackOffice 1차', name: '시스템 관리', owner: O, start: '2026-05-19', end: '2026-05-22', progress: 50 },
-  { step: 3, group: 'BackOffice 1차', name: '요금 · 단가 관리', owner: O, start: '2026-05-23', end: '2026-05-29', progress: 40 },
-  { step: 3, group: 'BackOffice 1차', name: '고객지원', owner: O, start: '2026-05-23', end: '2026-05-29', progress: 40 },
-  { step: 3, group: 'BackOffice 1차', name: '발송 운영 모니터링', owner: O, start: '2026-06-02', end: '2026-06-12', progress: 0 },
-  { step: 3, group: 'BackOffice 1차', name: '발신 정보 검수', owner: O, start: '2026-06-02', end: '2026-06-12', progress: 0 },
-  { step: 3, group: 'BackOffice 1차', name: '결제 · 크레딧 관리 + 고객사 결제 탭', owner: O, start: '2026-06-09', end: '2026-06-19', progress: 0 },
-  { step: 3, group: 'BackOffice 1차', name: '템플릿 검수 · 관리', owner: O, start: '2026-06-16', end: '2026-06-24', progress: 0 },
-  { step: 3, group: 'BackOffice 1차', name: '수신거부 (운영)', owner: O, start: '2026-06-16', end: '2026-06-24', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '통계 · 리포트', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '대시보드', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '템플릿 검수 (AI 템플릿 정책)', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '발송 운영 모니터링 (캠페인)', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '콘텐츠 · 사이트 관리', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: '시스템 관리', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
-  { step: 3, group: 'BackOffice 2차', name: 'API 관리', owner: O, start: '2026-06-23', end: '2026-07-03', progress: 0 },
+  // ── Step 3 · 서비스 기획 (화면설계 or 설계) ─────────────
+  { step: 3, group: 'Front', name: '프로토타입으로 대체', owner: '김덕조, 김경은', progress: 90, href: 'https://malgn-notifications.pages.dev/#/' },
+  { step: 3, group: 'Front', name: '서비스 메뉴 콘텐츠', owner: '컨설팅팀, 김경은', progress: 0 },
+  { step: 3, group: 'Front', name: '운영가이드', owner: '김덕조, 김경은', progress: 0 },
+  { step: 3, group: 'BackOffice 1차', name: '공통, 로그인, 계정 관리', owner: '김경은', start: '2026-05-18', end: '2026-05-22', progress: 70 },
+  { step: 3, group: 'BackOffice 1차', name: '회원/고객사 관리', owner: '김경은', start: '2026-05-18', end: '2026-05-22', progress: 70, note: '회원 발송 이력 관리, 고객사 결제 상세, 환불신청 제외' },
+  { step: 3, group: 'BackOffice 1차', name: '시스템 관리', owner: '김경은', start: '2026-05-19', end: '2026-05-22', progress: 70, note: '운영자 계정 관리, 권한/역할 관리(RBAC), 감사 로그' },
+  { step: 3, group: 'BackOffice 1차', name: '요금/단가 관리', owner: '김경은', start: '2026-05-23', end: '2026-05-29', progress: 70 },
+  { step: 3, group: 'BackOffice 1차', name: '고객지원', owner: '김경은', start: '2026-05-23', end: '2026-05-29', progress: 70, note: '운영 가이드 관리 제외' },
+  { step: 3, group: 'BackOffice 1차', name: '발송 운영 모니터링', owner: '김경은', start: '2026-06-02', end: '2026-06-12', progress: 0, note: '캠페인 제외, 회원/고객사 관리의 회원 발송 이력 관리 포함' },
+  { step: 3, group: 'BackOffice 1차', name: '발신 정보 검수', owner: '김경은', start: '2026-06-02', end: '2026-06-12', progress: 0 },
+  { step: 3, group: 'BackOffice 1차', name: '결제/크레딧 관리, 고객사 상세 결제 탭', owner: '김경은', start: '2026-06-09', end: '2026-06-19', progress: 0 },
+  { step: 3, group: 'BackOffice 1차', name: '템플릿 검수/관리', owner: '김경은', start: '2026-06-16', end: '2026-06-24', progress: 0, note: '샘플 템플릿 관리, AI 템플릿 정책 관리 제외' },
+  { step: 3, group: 'BackOffice 1차', name: '수신거부 (운영)', owner: '김경은', start: '2026-06-16', end: '2026-06-24', progress: 0 },
+  { step: 3, group: 'BackOffice 2차', name: '통계/리포트', owner: '김경은', progress: 0 },
+  { step: 3, group: 'BackOffice 2차', name: '대시보드', owner: '김경은', progress: 0 },
+  { step: 3, group: 'BackOffice 2차', name: '템플릿 검수/관리 (AI 템플릿 정책 관리)', owner: '김경은', progress: 0, note: '샘플 템플릿 관리, AI 템플릿 정책 관리 제외 진행' },
+  { step: 3, group: 'BackOffice 2차', name: '발송 운영 모니터링 (캠페인)', owner: '김경은', progress: 0, note: '캠페인 진행' },
+  { step: 3, group: 'BackOffice 2차', name: '고객지원', owner: '김경은', progress: 0, note: '운영 가이드 관리 진행' },
+  { step: 3, group: 'BackOffice 2차', name: '콘텐츠/사이트 관리', owner: '김경은', progress: 0, note: '시스템 설정, 점검 모드 관리, 외부 연동 설정 진행' },
+  { step: 3, group: 'BackOffice 2차', name: '시스템 관리', owner: '김경은', progress: 0 },
+  { step: 3, group: 'BackOffice 2차', name: 'API 관리', owner: '김경은', progress: 0 },
 
   // ── Step 5 · 서비스 개발 (화면 단위) ────────────────────
   { step: 5, group: '설계 및 준비', name: '아키텍처 설계', owner: O, start: '2026-05-12', end: '2026-05-14', progress: 100, href: 'https://github.com/malgnsoft/malgn-noti/blob/main/doc/STACK.md' },
