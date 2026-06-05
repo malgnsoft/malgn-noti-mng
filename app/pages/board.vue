@@ -56,6 +56,7 @@ const {
           <AppWbsOverview
             :stages="stages"
             :weighted-average="weightedAverage"
+            variant="rows"
           />
         </div>
 

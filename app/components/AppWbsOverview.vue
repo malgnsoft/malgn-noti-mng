@@ -16,8 +16,8 @@
       </div>
     </div>
 
-    <!-- 단계별 진행률 — 5개 박스 한 줄 -->
-    <div class="stage-grid">
+    <!-- 단계별 진행률 — 박스 스타일 (대시보드) -->
+    <div v-if="variant === 'boxes'" class="stage-grid">
       <NuxtLink
         v-for="(s, i) in stages"
         :key="s.id"
@@ -40,16 +40,51 @@
         </div>
       </NuxtLink>
     </div>
+
+    <!-- 단계별 진행률 — 행 스타일 (현황판) -->
+    <section v-else class="overview-section">
+      <div class="overview-head">
+        <h2>단계별 진행률</h2>
+        <p>행을 클릭하면 상세로 이동</p>
+      </div>
+      <ul class="overview-list">
+        <NuxtLink
+          v-for="(s, i) in stages"
+          :key="s.id"
+          :to="`/board#stage-${s.id}`"
+          class="overview-row"
+          :class="i > 0 ? 'overview-row--bordered' : ''"
+        >
+          <span class="overview-emoji">{{ s.emoji }}</span>
+          <span class="overview-no">{{ String(i + 1).padStart(2, '0') }}</span>
+          <div class="overview-text">
+            <p class="overview-name">{{ s.no }} · {{ s.name }}</p>
+            <p class="overview-summary">{{ s.summary }}</p>
+          </div>
+          <span class="overview-count">{{ s.tasks.length }}건</span>
+          <div class="overview-progress">
+            <div class="overview-progress-track">
+              <div :class="['overview-progress-fill', wbsProgressFill(s.progress)]" :style="{ width: s.progress + '%' }" />
+            </div>
+            <span class="overview-progress-text">{{ s.progress }}%</span>
+          </div>
+          <span class="overview-arrow">→</span>
+        </NuxtLink>
+      </ul>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { WbsStage } from '~/composables/useWbs'
 
-defineProps<{
+withDefaults(defineProps<{
   stages: WbsStage[]
   weightedAverage: number
-}>()
+  variant?: 'boxes' | 'rows'
+}>(), {
+  variant: 'boxes',
+})
 </script>
 
 <style scoped>
@@ -96,7 +131,7 @@ defineProps<{
   transition: width .3s;
 }
 
-/* ── 단계별 진행률 5박스 ── */
+/* ── 박스 스타일 (대시보드) ── */
 .stage-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -133,7 +168,6 @@ defineProps<{
   font-weight: 600;
   color: #18181b;
   line-height: 1.4;
-  /* 2줄까지 표시 후 말줄임 — 박스 높이 정렬 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -174,8 +208,89 @@ defineProps<{
   color: #a1a1aa;
 }
 
+/* ── 행 스타일 (현황판) ── */
+.overview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.overview-head h2 { font-size: 14px; font-weight: 600; color: #3f3f46; }
+.overview-head p { font-size: 13px; color: #a1a1aa; }
+.overview-list {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.overview-row {
+  display: grid;
+  grid-template-columns: 28px 28px minmax(0, 1fr) auto 180px auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background-color .15s;
+}
+.overview-row:hover { background: #fafafa; }
+.overview-row--bordered { border-top: 1px solid #f4f4f5; }
+.overview-emoji { font-size: 20px; line-height: 1; }
+.overview-no {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+}
+.overview-text { min-width: 0; }
+.overview-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #18181b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview-summary {
+  font-size: 13px;
+  color: #71717a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overview-count { font-size: 13px; color: #a1a1aa; }
+.overview-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.overview-progress-track {
+  width: 120px;
+  height: 4px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  overflow: hidden;
+}
+.overview-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width .3s;
+}
+.overview-progress-text {
+  width: 36px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3f3f46;
+  font-variant-numeric: tabular-nums;
+}
+.overview-arrow { color: #d4d4d8; }
+
 @media (max-width: 900px) {
   .stage-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .overview-row { grid-template-columns: 28px minmax(0, 1fr); }
+  .overview-no, .overview-count, .overview-progress, .overview-arrow { display: none; }
 }
 @media (max-width: 560px) {
   .stage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
