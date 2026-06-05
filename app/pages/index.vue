@@ -20,8 +20,6 @@
         v-else
         :stages="stages"
         :weighted-average="weightedAverage"
-        :total-counts="totalCounts"
-        :all-tasks="allTasks"
       />
     </section>
 
@@ -68,8 +66,6 @@
 const {
   doc: wbsDoc,
   stages,
-  allTasks,
-  totalCounts,
   weightedAverage,
   pending: wbsPending,
   error: wbsError,

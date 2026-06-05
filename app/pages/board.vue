@@ -13,8 +13,6 @@ const {
   doc,
   stages,
   lastUpdated,
-  allTasks,
-  totalCounts,
   weightedAverage,
   pending,
   error,
@@ -58,8 +56,6 @@ const {
           <AppWbsOverview
             :stages="stages"
             :weighted-average="weightedAverage"
-            :total-counts="totalCounts"
-            :all-tasks="allTasks"
           />
         </div>
 
