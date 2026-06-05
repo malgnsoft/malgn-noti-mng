@@ -1,5 +1,5 @@
-// malgn-noti-api 공개 WBS 엔드포인트(GET /wbs) 조회 + 파생 통계.
-// 현황판(/board)과 대시보드(/)가 공유. read-only (편집은 malgn-noti /wbs 에서).
+// 자체 D1(malgn-noti-project) 기반 내부 API(/api/board) 조회 + 파생 통계.
+// 현황판(/board)과 대시보드(/)가 공유. 데이터 편집은 D1에서 수행.
 
 export type WbsStatus = 'done' | 'in_progress' | 'pending' | 'blocked'
 
