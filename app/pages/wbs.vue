@@ -222,13 +222,13 @@ const totalDays = days.length
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.c-grp { left: 0; width: 116px; min-width: 116px; max-width: 116px; font-weight: 600; color: #3f3f46; }
-.c-name { left: 116px; width: 220px; min-width: 220px; max-width: 220px; }
-.c-owner { left: 336px; width: 60px; min-width: 60px; max-width: 60px; text-align: center; color: #52525b; }
+.c-grp { left: 0; width: 124px; min-width: 124px; max-width: 124px; font-weight: 600; color: #3f3f46; padding-left: 16px; }
+.c-name { left: 124px; width: 220px; min-width: 220px; max-width: 220px; }
+.c-owner { left: 344px; width: 60px; min-width: 60px; max-width: 60px; text-align: center; color: #52525b; }
 .c-date { width: 54px; min-width: 54px; max-width: 54px; text-align: center; font-family: var(--font-mono); color: #52525b; }
-.c-date:nth-of-type(4) { left: 396px; }
-.c-date:nth-of-type(5) { left: 450px; }
-.c-pct { left: 504px; width: 56px; min-width: 56px; max-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.c-date:nth-of-type(4) { left: 404px; }
+.c-date:nth-of-type(5) { left: 458px; }
+.c-pct { left: 512px; width: 56px; min-width: 56px; max-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .name-link { color: #2563eb; text-decoration: underline; }
 .note-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; margin-left: 4px; vertical-align: middle; }
 
@@ -247,11 +247,11 @@ const totalDays = days.length
   vertical-align: middle;
 }
 .corner.c-grp { left: 0; }
-.corner.c-name { left: 116px; }
-.corner.c-owner { left: 336px; }
-.corner.c-date:nth-of-type(4) { left: 396px; }
-.corner.c-date:nth-of-type(5) { left: 450px; }
-.corner.c-pct { left: 504px; }
+.corner.c-name { left: 124px; }
+.corner.c-owner { left: 344px; }
+.corner.c-date:nth-of-type(4) { left: 404px; }
+.corner.c-date:nth-of-type(5) { left: 458px; }
+.corner.c-pct { left: 512px; }
 .m-head { background: #d9e2ef; color: #1e3a5f; font-weight: 700; }
 .d-head { width: 24px; min-width: 24px; max-width: 24px; line-height: 1.05; padding: 1px 0; }
 .d-head .d-num { display: block; font-size: 11px; }
@@ -269,7 +269,7 @@ const totalDays = days.length
   background: #cbd5e1;
   color: #0f172a;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 10px 0 16px;
   white-space: nowrap;
 }
 .step-band { background: #e2e8f0; }
