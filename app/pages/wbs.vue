@@ -95,7 +95,7 @@ function pctBg(p: number) {
   if (p >= 70) return '#4ade80'
   if (p >= 30) return '#bbf7d0'
   if (p > 0) return '#e5f6ea'
-  return 'transparent'
+  return '#ffffff'
 }
 function pctColor(p: number) {
   return p >= 70 ? '#fff' : '#15803d'
@@ -228,7 +228,7 @@ const totalDays = days.length
 .c-date { width: 54px; min-width: 54px; max-width: 54px; text-align: center; font-family: var(--font-mono); color: #52525b; }
 .c-date:nth-of-type(4) { left: 404px; }
 .c-date:nth-of-type(5) { left: 458px; }
-.c-pct { left: 512px; width: 56px; min-width: 56px; max-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.c-pct { left: 512px; width: 56px; min-width: 56px; max-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; background: #fff; }
 .name-link { color: #2563eb; text-decoration: underline; }
 .note-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #f59e0b; margin-left: 4px; vertical-align: middle; }
 
