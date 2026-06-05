@@ -39,7 +39,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/prose.css'],
 
   // 정적 배포(Cloudflare Pages)용 프리렌더 — 라우트를 직접 열거(크롤 끔).
   nitro: {
