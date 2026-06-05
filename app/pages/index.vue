@@ -27,7 +27,10 @@
             <ul class="links">
               <li v-for="link in shortcuts" :key="link.url">
                 <a :href="link.url" target="_blank" rel="noopener noreferrer" class="link">
-                  <span class="link-label">{{ link.label }}</span>
+                  <span class="link-main">
+                    <span class="link-label">{{ link.label }}</span>
+                    <span class="link-url">{{ stripProto(link.url) }}</span>
+                  </span>
                   <UIcon name="i-lucide-arrow-up-right" class="link-ext" />
                 </a>
               </li>
@@ -81,9 +84,10 @@ const shortcuts = [
   { label: '사용자단 콘솔', url: 'https://malgn-noti.pages.dev' },
   { label: '관리자단 콘솔', url: 'https://malgn-noti-admin.pages.dev' },
   { label: 'API 서버', url: 'https://malgn-noti-api.malgnsoft.workers.dev' },
-  { label: 'API 문서', url: 'https://malgn-noti-api.malgnsoft.workers.dev/doc' },
   { label: 'GitHub', url: 'https://github.com/malgnsoft/malgn-noti-mng' },
 ]
+
+const stripProto = (u: string) => u.replace(/^https?:\/\//, '')
 
 const {
   doc: wbsDoc,
@@ -140,14 +144,31 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-800);
+  padding: 8px 0;
   border-top: 1px solid var(--ink-50);
 }
 .links li:first-child .link { border-top: 0; }
-.link:hover { color: var(--accent-ink); }
+.link-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.link-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-800);
+}
+.link-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.link:hover .link-label { color: var(--accent-ink); }
+.link:hover .link-url { color: var(--accent-ink); }
 .link-ext {
   width: 14px;
   height: 14px;
