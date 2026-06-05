@@ -322,7 +322,7 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
                 <a v-if="r.t.href" :href="r.t.href" target="_blank" rel="noopener noreferrer" class="tname">{{ r.t.name }}</a>
                 <span v-else class="tname" :title="r.t.note ? r.t.name + ' — ' + r.t.note : r.t.name">{{ r.t.name }}</span>
               </div>
-              <div class="cell c-who">
+              <div class="cell c-who" :title="r.t.who.length ? r.t.who.join(', ') : '미정'">
                 <span v-if="r.t.who.length" class="who"><span class="ava" :style="{ background: PCOLOR[r.t.who[0]!] ?? '#94a3b8' }">{{ r.t.who[0]![0] }}</span><span class="nm">{{ r.t.who[0] }}</span><span v-if="r.t.who.length > 1" class="more">+{{ r.t.who.length - 1 }}</span></span>
                 <span v-else class="who"><span class="nm dash">미정</span></span>
               </div>
