@@ -137,11 +137,17 @@ const recentHistory = computed(() => histories.value.slice(0, 6))
 }
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr): 카드 내부의 nowrap 긴 텍스트(max-content)가 컬럼을
+     밀어내 그리드가 .page 최대폭을 넘어 오버플로하던 문제 방지 → 위 현황
+     섹션과 동일 폭 유지. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
 }
+.col {
+  min-width: 0;
+}
 @media (max-width: 780px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
 }
 .col-head {
   display: flex;
