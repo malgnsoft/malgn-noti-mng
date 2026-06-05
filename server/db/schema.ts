@@ -33,3 +33,18 @@ export const task = sqliteTable('task', {
   href: text('href'),
   sort: integer('sort').notNull().default(0),
 })
+
+// 간트 WBS 항목 — 등록/수정/삭제 대상 (Step 1·3·5 화면 단위)
+export const wbsItem = sqliteTable('wbs_item', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  step: integer('step').notNull(),
+  grp: text('grp').notNull(),
+  name: text('name').notNull(),
+  owner: text('owner').notNull().default(''),
+  start: text('start'),
+  end: text('end'),
+  progress: integer('progress').notNull().default(0),
+  note: text('note'),
+  href: text('href'),
+  sort: integer('sort').notNull().default(0),
+})
