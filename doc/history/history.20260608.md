@@ -34,12 +34,18 @@
 - 샌드박스 PATH에 `mkdir`/`dirname` 미존재로 신규 폴더 3종(optout·content·developers 11개)은 Write 툴로 생성(부모 디렉터리 자동 생성), 나머지 31개는 셸 루프로 생성.
 - 빌드·배포·검증: `pnpm build` → Pages alias `9b2de4ec`. 종전 404였던 라우트 8종 샘플 전부 200 + "준비 중" 마커 렌더 확인.
 
-## 5. 산출물
+## 5. LNB 메뉴 중복 활성화 버그 수정 (malgn-noti-admin · AppLnb)
 
-- `malgn-noti-admin` 커밋 3건 + `main` 푸시 — §1 AI 배너(`AppLnb.vue`), §3 전체 메뉴(`AppLnb.vue`), §4 스텁 42 + `AppComingSoon.vue`.
-- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584`, 준비 중 스텁 `9b2de4ec` (`*.malgn-noti-admin.pages.dev`).
+- `/monitoring/blocked` 등 하위 라우트 진입 시 "통합 발송"(`/monitoring`)과 해당 항목이 **동시에 활성 표시**되던 버그. 원인은 `isActive`의 `startsWith` 접두사 매칭(`/monitoring`이 `/monitoring/*` 전부 매칭).
+- 수정: 현재 경로에 매칭되는 메뉴 경로 중 **가장 긴(가장 구체적인) 하나만 활성**으로 처리하는 `activePath` computed 도입(`allPaths`에서 최장 매칭 탐색). 고객사 상세(`/customers/1`) 같은 detail 라우트는 부모 "고객사"만 활성으로 유지.
+- 라이브 검증: `/monitoring`·`/monitoring/blocked`·`/customers`·`/customers/1`·`/` 모두 활성 메뉴 정확히 1개. Pages alias `a3facf3a`.
 
-## 6. 다음 단계 / 알려진 한계
+## 6. 산출물
+
+- `malgn-noti-admin` 커밋 4건 + `main` 푸시 — §1 AI 배너(`AppLnb.vue`), §3 전체 메뉴(`AppLnb.vue`), §4 스텁 42 + `AppComingSoon.vue`, §5 중복 활성화 수정(`AppLnb.vue`).
+- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584`, 준비 중 스텁 `9b2de4ec`, 중복 활성화 수정 `a3facf3a` (`*.malgn-noti-admin.pages.dev`).
+
+## 7. 다음 단계 / 알려진 한계
 
 - 42개 라우트는 '준비 중' 스텁 — 도메인별 실제 화면(목록/폼/연동)은 별도 구현 필요.
 - 대시보드 그룹화 여부, API `/developers/*` 경로 확정은 페이지 본격 구현 시 재검토.
