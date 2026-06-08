@@ -80,7 +80,7 @@
   border: 1px solid var(--line);
   word-break: break-word;
 }
-.doc-prose :not(pre) > code { white-space: nowrap; }
+.doc-prose :not(pre) > code { white-space: normal; overflow-wrap: anywhere; }
 
 /* 코드 블록 */
 .doc-prose pre {
@@ -90,6 +90,7 @@
   color: #e4e4e7;
   border-radius: 10px;
   overflow-x: auto;
+  max-width: 100%;
   font-size: 13px;
   line-height: 1.6;
 }
