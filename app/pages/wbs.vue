@@ -173,6 +173,11 @@ const ownerTip = ref<{ text: string, x: number, y: number } | null>(null)
 function showOwner(t: Task, e: MouseEvent) { ownerTip.value = { text: t.who.length ? t.who.join(', ') : '미정', x: e.clientX, y: e.clientY } }
 function moveOwner(e: MouseEvent) { if (ownerTip.value) ownerTip.value = { ...ownerTip.value, x: e.clientX, y: e.clientY } }
 function hideOwner() { ownerTip.value = null }
+// 작업명: 잘린 경우(말줄임)에만 전체 내용 툴팁
+function showName(text: string, e: MouseEvent) {
+  const el = e.currentTarget as HTMLElement
+  if (el && el.scrollWidth > el.clientWidth + 1) ownerTip.value = { text, x: e.clientX, y: e.clientY }
+}
 const ownerTipPos = computed(() => {
   if (!ownerTip.value) return {}
   const x = Math.min(ownerTip.value.x + 14, (import.meta.client ? window.innerWidth : 1280) - 200)
@@ -343,8 +348,8 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
             <div class="info">
               <div class="cell c-name">
                 <span class="indent" />
-                <a v-if="r.t.href" :href="r.t.href" target="_blank" rel="noopener noreferrer" class="tname">{{ r.t.name }}</a>
-                <span v-else class="tname">{{ r.t.name }}</span>
+                <a v-if="r.t.href" :href="r.t.href" target="_blank" rel="noopener noreferrer" class="tname" @mouseenter="showName(r.t.name, $event)" @mousemove="moveOwner" @mouseleave="hideOwner">{{ r.t.name }}</a>
+                <span v-else class="tname" @mouseenter="showName(r.t.name, $event)" @mousemove="moveOwner" @mouseleave="hideOwner">{{ r.t.name }}</span>
                 <button v-if="r.t.note" class="memo-btn" title="메모 보기" @click.stop="openMemo(r.t.note!, $event)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 10h16M4 15h10" /></svg>
                 </button>
@@ -513,7 +518,7 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
 .memo-btn { flex-shrink: 0; width: 18px; height: 18px; display: grid; place-items: center; border: 0; background: transparent; color: var(--ink-3); cursor: pointer; border-radius: 4px; padding: 0; }
 .memo-btn:hover { background: var(--band); color: var(--accent); }
 .memo-btn svg { width: 13px; height: 13px; }
-.otip { position: fixed; z-index: 9999; pointer-events: none; background: var(--ink); color: #fff; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px; box-shadow: var(--shadow-pop); white-space: nowrap; }
+.otip { position: fixed; z-index: 9999; pointer-events: none; background: var(--ink); color: #fff; font-size: 11.5px; font-weight: 600; padding: 5px 9px; border-radius: 6px; box-shadow: var(--shadow-pop); max-width: 340px; line-height: 1.45; word-break: break-word; }
 .memo-backdrop { position: fixed; inset: 0; z-index: 9998; }
 .memo-pop { position: fixed; z-index: 9999; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-pop); width: 300px; max-width: 92vw; }
 .memo-pop-h { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; font-size: 12px; font-weight: 700; color: var(--ink-2); border-bottom: 1px solid var(--line); }
