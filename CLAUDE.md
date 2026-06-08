@@ -192,7 +192,7 @@ pnpm test
 - **단일 브랜치 운영**: `main` 하나만 사용. 피처 브랜치를 만들었다면 작업 후 `main`에 FF 머지하고 로컬·원격 브랜치 삭제.
 - 커밋·푸시는 **사용자가 명시적으로 요청할 때만**.
 - 커밋 메시지: 한국어 제목 + 본문 불릿. 끝에 반드시 trailer:
-  `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
+  `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
 - 무관·기존 untracked 파일은 끌어들이지 말고 작업 범위 경로만 stage.
 
 **배포 (Cloudflare Pages — 프로덕션)**
