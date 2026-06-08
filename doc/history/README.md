@@ -23,6 +23,7 @@ history.yyyyMMdd.md
 
 | 날짜 | 요약 |
 | --- | --- |
+| [2026-06-08](./history.20260608.md) | **관리자단 LNB AI 배너 닫기 → 하루 비노출** — `malgn-noti-admin` `AppLnb`의 "AI 발송 도우미 베타" 배너에 닫기(X) 버튼 추가, 닫으면 "하루 동안 다시 표시되지 않습니다" 토스트 + `localStorage`(`aiBannerDismissedUntil`) 만료 시각(24h) 저장 + `onMounted` 만료 비교 재노출 판정. Cloudflare Pages 재배포(alias `69c788bd.malgn-noti-admin.pages.dev`). |
 | [2026-06-05](./history.20260605.md) | **malgn-noti-mng 관리 레포 신설** — GitHub 연결 + `malgn-noti/doc/` 트리 집약(공통·도메인·이력) + CLAUDE.md 병합·현행화(이력 작성처를 본 레포로 변경, malgn-noti `doc/history/` 삭제) + malgn-noti 동일 스택(Nuxt 3 + Tailwind v4 + Nuxt UI v3) + `@nuxt/content` 기반 **문서/이력 브라우저 앱** 스캐폴딩(대시보드·문서·이력 타임라인) + **Cloudflare Pages 정적 배포**(<https://malgn-noti-mng.pages.dev>, 프리렌더 라우트 직접 열거로 마크다운 내부 링크 크롤·대소문자·파일명 점 이슈 해결) + **맑은노티 현황판(`/board`)** — malgn-noti `/wbs` 읽기 전용 이식(공개 API `GET /wbs` 라이브) + 대시보드 WBS 현황 요약(`AppWbsOverview` 공유) |
 | [2026-05-11](./history.20260511.md) | 프로젝트 착수 — 세 레포 부트스트랩 + 첫 GitHub 푸시 + Cloudflare 첫 배포 + 시안 GNB 도입 |
 | [2026-05-12](./history.20260512.md) | 시안 정밀 매칭 — 콘텐츠 폭 1200px 통일, Utility Bar 분리, 메뉴 8개, 문서 3종(`FRONTEND`/`STACK`/`DESIGN`) |
