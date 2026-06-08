@@ -42,15 +42,6 @@ const {
               <b>{{ lastUpdated }}</b>
             </p>
           </div>
-          <a
-            href="https://malgn-noti.pages.dev/wbs"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="board-source-link"
-          >
-            원본 WBS
-            <UIcon name="i-lucide-arrow-up-right" />
-          </a>
         </div>
 
         <!-- 개요 (대시보드와 공유) -->
@@ -182,19 +173,6 @@ const {
   color: #71717a;
 }
 .board-subtitle b { font-weight: 600; color: #3f3f46; }
-.board-source-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px;
-  color: #71717a;
-  padding: 6px 10px;
-  border: 1px solid #e4e4e7;
-  border-radius: 6px;
-  background: #fff;
-}
-.board-source-link:hover { background: #fafafa; border-color: #d4d4d8; color: #27272a; }
 
 .board-overview { margin-top: 24px; }
 
