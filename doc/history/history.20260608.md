@@ -26,13 +26,21 @@
 - 판단 사항: ① 대시보드는 leaf `/` 유지(사양 하위 4개는 위젯/플레이스홀더 성격). ② **API 경로는 `/developers/*`** — Nuxt/Cloudflare Pages `/api/*` 서버 함수 예약과 충돌 회피. ③ 템플릿 2차 진행 3종 회색 `2차` 배지, 기존 "12" 배지 제거. ④ 운영 가이드 외부 링크 아이콘(`MenuItem.external` 필드 신설). ⑤ 기존 `/system/api` 페이지는 미연결(파일 잔존).
 - 빌드·배포·검증: `pnpm build` → Pages 재배포 alias `1b6e0584.malgn-noti-admin.pages.dev`, 프로덕션 200 + 라이브 HTML에 13개 그룹 라벨 전부 렌더 확인. `pnpm lint` 통과.
 
-## 4. 산출물
+## 4. 신규 42개 라우트 '준비 중' 스텁 페이지 (malgn-noti-admin)
 
-- `malgn-noti-admin` 커밋 2건(`app/components/AppLnb.vue`) + `main` 푸시 — §1 AI 배너, §3 전체 메뉴.
-- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584` (`*.malgn-noti-admin.pages.dev`).
+- §3에서 경로만 정의된 신규 라우트가 클릭 시 404 → 전부 **준비 중 플레이스홀더**로 채움.
+- 공용 컴포넌트 **`AppComingSoon.vue`** 신설 — `caption`/`title` prop으로 `AppPageHeader`(dev=`screen` 회색 "화면" 배지) + `AppEmptyState`(망치 아이콘 "준비 중인 화면입니다") 렌더 + `useHead`·`useBreadcrumb` 자동 설정. 기존 페이지 패턴(`AppPageHeader`/`AppSectionCard`/`AppDataTable`) 재사용.
+- `app/pages` 하위 **42개 스텁** 생성: 회원/고객사 3·발송 모니터링 5·발신 정보 검수 4·템플릿 4·결제/크레딧 5·요금/단가 1·수신거부 3·고객 지원 1·콘텐츠/사이트 4·통계/리포트 4·시스템 4·API(`/developers/*`) 4.
+- 샌드박스 PATH에 `mkdir`/`dirname` 미존재로 신규 폴더 3종(optout·content·developers 11개)은 Write 툴로 생성(부모 디렉터리 자동 생성), 나머지 31개는 셸 루프로 생성.
+- 빌드·배포·검증: `pnpm build` → Pages alias `9b2de4ec`. 종전 404였던 라우트 8종 샘플 전부 200 + "준비 중" 마커 렌더 확인.
 
-## 5. 다음 단계 / 알려진 한계
+## 5. 산출물
 
-- 신규 ~38개 라우트 페이지 미구현 → 클릭 시 404. "준비 중" 스텁 또는 본격 구현 별도 진행 필요.
-- 대시보드 그룹화 여부, API `/developers/*` 경로 확정은 페이지 구현 시 재검토.
+- `malgn-noti-admin` 커밋 3건 + `main` 푸시 — §1 AI 배너(`AppLnb.vue`), §3 전체 메뉴(`AppLnb.vue`), §4 스텁 42 + `AppComingSoon.vue`.
+- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584`, 준비 중 스텁 `9b2de4ec` (`*.malgn-noti-admin.pages.dev`).
+
+## 6. 다음 단계 / 알려진 한계
+
+- 42개 라우트는 '준비 중' 스텁 — 도메인별 실제 화면(목록/폼/연동)은 별도 구현 필요.
+- 대시보드 그룹화 여부, API `/developers/*` 경로 확정은 페이지 본격 구현 시 재검토.
 - 배너 비노출 상태는 브라우저 `localStorage` 기준(기기·브라우저 한정) — 서버 저장 아님. 노출/클릭/닫기 지표 백엔드 수집은 추후 검토.
