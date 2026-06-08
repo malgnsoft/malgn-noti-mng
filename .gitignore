@@ -34,3 +34,6 @@ node_modules
 
 # wrangler local state
 .wrangler
+
+# 재사용 스타터 패키지(산출물)
+project-mng-starter.zip
