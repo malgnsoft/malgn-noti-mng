@@ -3,7 +3,10 @@ import { wbsSteps, wbsStageMeta } from '~/utils/wbsData'
 
 useHead({ title: '전체 일정' })
 
-const TODAY = '2026-06-05'
+// 오늘 = 실제 현재 날짜(KST). SSR 값으로 하이드레이트 후 클라이언트에서 보정(캐시 대비).
+function kstToday() { return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10) }
+const today = useState('wbs:today', () => kstToday())
+onMounted(() => { today.value = kstToday() })
 
 /* 담당자 색 */
 const PEOPLE = ['김도형', '김경은', '김덕조', '컨설팅팀', '안병훈', '미정'] as const
@@ -35,8 +38,8 @@ const items = computed<Item[]>(() => data.value?.data ?? [])
 
 function statusOf(t: Item): Status {
   if (t.progress >= 100) return 'done'
-  if (!t.start || t.start > TODAY) return 'plan'
-  if (t.end && t.end < TODAY && t.progress < 100) return 'late'
+  if (!t.start || t.start > today.value) return 'plan'
+  if (t.end && t.end < today.value && t.progress < 100) return 'late'
   return 'active'
 }
 
@@ -50,13 +53,13 @@ const days = computed(() => {
   const cur = toDate(minIso); const last = toDate(maxIso)
   while (cur <= last) {
     const dow = cur.getDay()
-    out.push({ iso: toIso(cur), day: cur.getDate(), month: cur.getMonth() + 1, dow, weekend: dow === 0 || dow === 6, sat: dow === 6, sun: dow === 0, today: toIso(cur) === TODAY })
+    out.push({ iso: toIso(cur), day: cur.getDate(), month: cur.getMonth() + 1, dow, weekend: dow === 0 || dow === 6, sat: dow === 6, sun: dow === 0, today: toIso(cur) === today.value })
     cur.setDate(cur.getDate() + 1)
   }
   return out
 })
 const idxOf = computed(() => new Map(days.value.map((d, i) => [d.iso, i])))
-const todayIdx = computed(() => idxOf.value.get(TODAY) ?? -1)
+const todayIdx = computed(() => idxOf.value.get(today.value) ?? -1)
 const months = computed(() => {
   const out: { month: number, span: number, startIdx: number }[] = []
   days.value.forEach((d, i) => { const l = out[out.length - 1]; if (l && l.month === d.month) l.span++; else out.push({ month: d.month, span: 1, startIdx: i }) })
@@ -243,7 +246,7 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
     <header class="topbar">
       <div class="title-wrap">
         <h1>전체 일정</h1>
-        <span class="sub">{{ subtitle }} <b>{{ md(TODAY) }}</b></span>
+        <span class="sub">{{ subtitle }} <b>{{ md(today) }}</b></span>
       </div>
       <div class="kpis">
         <div class="kpi overall"><span class="v">{{ kpi.avg }}%</span><span class="l">전체 진척 · {{ kpi.n }}개 작업</span><div class="meter"><i :style="{ width: kpi.avg + '%' }" /></div></div>
@@ -290,7 +293,7 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
           <template v-for="(d, i) in days" :key="'wk' + i"><div v-if="d.weekend" class="wk" :style="{ left: colDay(i), width: 'var(--day-w)' }" /></template>
           <div v-for="(m, i) in months" :key="'ml' + i" class="mline" :style="{ left: colDay(m.startIdx) }" />
         </div>
-        <div v-if="todayIdx >= 0" class="todayline" :data-label="md(TODAY)" :style="{ left: `calc(var(--info-w) + ${colDay(todayIdx)} + var(--day-w) * 0.5)` }" />
+        <div v-if="todayIdx >= 0" class="todayline" :data-label="md(today)" :style="{ left: `calc(var(--info-w) + ${colDay(todayIdx)} + var(--day-w) * 0.5)` }" />
 
         <div class="ghead">
           <div class="ihead">
