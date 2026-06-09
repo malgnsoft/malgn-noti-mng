@@ -82,7 +82,7 @@ const tree = computed<Step[]>(() => {
     if (!c) { c = { id: `${s.id}-${s.cats.length}`, name: it.group, tasks: [] }; s.cats.push(c) }
     c.tasks.push({ ...it, who: whoOf(it.owner), status: statusOf(it) })
   }
-  return steps
+  return steps.sort((a, b) => a.num - b.num) // 단계 번호순(1·2·3·5)
 })
 const allTasks = computed(() => tree.value.flatMap(s => s.cats.flatMap(c => c.tasks)))
 
