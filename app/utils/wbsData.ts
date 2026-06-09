@@ -19,17 +19,17 @@ export const wbsSteps: Record<number, string> = {
   1: 'Step 1 · 프로젝트 준비',
   2: 'Step 2 · 주요 서비스 정책 이슈 정리',
   3: 'Step 3 · 서비스 기획 (화면설계)',
-  5: 'Step 5 · 서비스 개발',
-  6: 'Step 6 · QA',
+  4: 'Step 4 · 서비스 개발',
+  5: 'Step 5 · QA',
 }
 
 // 단계 가중치·진행률 — 현황판(보드)과 동일 값. 전체 진척은 가중평균.
-// (Step 2는 WBS 화면엔 없지만 전체 진척 산정에는 포함. Step 4는 삭제됨.)
+// (Step 4 = 서비스 개발. Step 5 = QA는 가중치 미포함(weight 0).)
 export const wbsStageMeta: Record<number, { weight: number, progress: number }> = {
   1: { weight: 10, progress: 55 },
   2: { weight: 15, progress: 55 },
   3: { weight: 20, progress: 35 },
-  5: { weight: 45, progress: 55 },
+  4: { weight: 45, progress: 55 },
 }
 
 export const wbsGantt: GanttItem[] = [
