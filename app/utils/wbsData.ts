@@ -20,6 +20,7 @@ export const wbsSteps: Record<number, string> = {
   2: 'Step 2 · 주요 서비스 정책 이슈 정리',
   3: 'Step 3 · 서비스 기획 (화면설계)',
   5: 'Step 5 · 서비스 개발',
+  6: 'Step 6 · QA',
 }
 
 // 단계 가중치·진행률 — 현황판(보드)과 동일 값. 전체 진척은 가중평균.
