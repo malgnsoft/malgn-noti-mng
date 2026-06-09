@@ -35,13 +35,17 @@
       <slot />
     </main>
 
-    <footer class="footer">
+    <footer v-if="!hideFooter" class="footer">
       <span>맑은노티(맑은 메시징) 프로젝트 문서·작업 이력</span>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+// 전체 화면 앱 페이지(WBS)는 푸터 숨김
+const route = useRoute()
+const hideFooter = computed(() => route.path === '/wbs')
+
 const nav = [
   { to: '/', label: '대시보드', icon: 'i-lucide-layout-dashboard' },
   { to: '/board', label: '현황판', icon: 'i-lucide-gauge' },
