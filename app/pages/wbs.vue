@@ -263,6 +263,8 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
       </div>
     </header>
 
+    <!-- 담당(툴바)+간트 = 상단 고정 영역 -->
+    <div class="wbs-pane">
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="tgroup">
@@ -378,6 +380,7 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
         </template>
       </div>
     </div>
+    </div>
 
     <!-- tooltip -->
     <div v-if="tip" class="tip" :style="tipPos">
@@ -441,8 +444,13 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
   --col-name: 300px; --col-who: 84px; --col-s: 50px; --col-e: 50px; --col-done: 56px; --col-prog: 86px;
   --info-w: calc(var(--col-name) + var(--col-who) + var(--col-s) + var(--col-e) + var(--col-done) + var(--col-prog));
   --day-w: 26px; --row-h: 30px; --grp-h: 34px; --step-h: 38px; --fs: 12.5px; --radius: 5px;
-  height: calc(100vh - 56px); display: flex; flex-direction: column;
   background: var(--bg); color: var(--ink); font-size: var(--fs); letter-spacing: -0.01em;
+}
+/* GNB·전체일정(topbar)은 스크롤되어 사라지고, 이 영역(담당 툴바+간트)이 상단 고정 */
+.wbs-pane {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  background: var(--surface);
 }
 .tnum { font-variant-numeric: tabular-nums; }
 .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 14px 22px 12px; background: var(--surface); border-bottom: 1px solid var(--line); }

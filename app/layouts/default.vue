@@ -1,6 +1,6 @@
 <template>
   <div class="layout-default">
-    <header class="gnb">
+    <header class="gnb" :class="{ 'gnb--static': isWbs }">
       <div class="gnb-inner">
         <NuxtLink to="/" class="brand">
           <span class="brand-icon"><AppLogoMark /></span>
@@ -42,9 +42,10 @@
 </template>
 
 <script setup lang="ts">
-// 전체 화면 앱 페이지(WBS)는 푸터 숨김
+// 전체 화면 앱 페이지(WBS)는 푸터 숨김 + GNB 비고정(스크롤 시 함께 올라감)
 const route = useRoute()
-const hideFooter = computed(() => route.path === '/wbs')
+const isWbs = computed(() => route.path === '/wbs')
+const hideFooter = isWbs
 
 const nav = [
   { to: '/', label: '대시보드', icon: 'i-lucide-layout-dashboard' },
@@ -71,6 +72,10 @@ const nav = [
   height: 56px;
   background: var(--white);
   border-bottom: 1px solid var(--line);
+}
+/* WBS(전체 화면): GNB도 스크롤되어 함께 올라감 */
+.gnb.gnb--static {
+  position: static;
 }
 .gnb-inner {
   display: flex;
