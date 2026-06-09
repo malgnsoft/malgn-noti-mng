@@ -23,13 +23,14 @@ export const wbsSteps: Record<number, string> = {
   5: 'Step 5 · QA',
 }
 
-// 단계 가중치·진행률 — 현황판(보드)과 동일 값. 전체 진척은 가중평균.
-// (Step 4 = 서비스 개발. Step 5 = QA는 가중치 미포함(weight 0).)
+// 단계 가중치·진행률 — 현황판(보드)과 동일 값. 전체 진척은 가중평균(합 100).
+// (Step 4 = 서비스 개발 45%, Step 5 = QA 10%.)
 export const wbsStageMeta: Record<number, { weight: number, progress: number }> = {
   1: { weight: 10, progress: 55 },
   2: { weight: 15, progress: 55 },
   3: { weight: 20, progress: 35 },
   4: { weight: 45, progress: 55 },
+  5: { weight: 10, progress: 0 },
 }
 
 export const wbsGantt: GanttItem[] = [
