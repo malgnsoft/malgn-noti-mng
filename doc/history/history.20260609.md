@@ -1,6 +1,6 @@
 # 2026-06-09 — SMS 실발송·iPIN 검증 + 관리자단 고객사 페이지 풀스택 실연동(배포)
 
-**한 줄 요약**: ① `malgn-noti-api`의 **문자(SMS) 서비스 실작동 확인** — 010-3283-5673으로 NHN 경유 실발송 성공(실제 messageId·성공코드 0). **iPIN(NICE 본인확인)은 real 불가** — 토큰 발급 단계에서 `1007 허용되지 않은 IP 접근`(Cloudflare egress IP 미등록)으로 mock만 동작. ② **관리자단 고객사 페이지(`/customers` 목록·상세)를 정적 목업 → 풀스택 실연동**으로 개발: api에 운영자용 `/ops/companies` 엔드포인트 신설(교차-테넌트, 공유 토큰 게이트) + admin 앱 Nitro 서버 프록시(토큰 서버측 주입) + 페이지 실데이터화. 워커·Pages 양쪽 프로덕션 배포 + 실 Aurora 데이터 전 구간 검증.
+**한 줄 요약**: ① `malgn-noti-api`의 **문자(SMS) 서비스 실작동 확인** — 010-3283-5673으로 NHN 경유 실발송 성공(실제 messageId·성공코드 0). **iPIN(NICE 본인확인)은 real 불가** — 토큰 발급 단계에서 `1007 허용되지 않은 IP 접근`(Cloudflare egress IP 미등록)으로 mock만 동작. ② **관리자단 고객사 페이지(`/customers` 목록·상세)를 정적 목업 → 풀스택 실연동**으로 개발: api에 운영자용 `/ops/companies` 엔드포인트 신설(교차-테넌트, 공유 토큰 게이트) + admin 앱 Nitro 서버 프록시(토큰 서버측 주입) + 페이지 실데이터화. 워커·Pages 양쪽 프로덕션 배포 + 실 Aurora 데이터 전 구간 검증. **(같은 날 추가 §7)** 동그라미 이니셜에서 `(주)`/`주식회사` 접두어 제거 + **고객사 등록**(운영자가 회사+소유자 계정 생성, `POST /ops/companies`) 추가·배포.
 
 ---
 
@@ -45,5 +45,14 @@
 
 - **운영자 인증**: 현재 공유 토큰(`OPS_TOKEN`)은 과도기. 운영자 계정/JWT·RBAC·2FA·감사 로그(admin CLAUDE.md §4) 도입 시 `/ops` 게이트를 정식 미들웨어로 교체.
 - **iPIN real 활성화**: NICE 콘솔에 Cloudflare egress IP 대역 등록(또는 IP 검사 OFF) → `NICE_MOCK` 제거 → 재검증 필요.
-- **고객사 등록(운영자)**: 회사는 테넌트 셀프 가입(`/auth/signup`)이 정본이라 운영자 생성 플로우는 미구현(목록의 등록 버튼 제거, 엑셀=CSV로 대체).
 - 가입일 범위 필터·계정 권한/채널 등 상세 부가 기능은 백엔드 스키마 확장 시 추가.
+- 고객사 등록 시 생성한 임시 비밀번호의 안내(이메일 발송)·강제 변경 유도는 추후. soft-delete된 회사의 owner loginid는 `TB_USER`에 잔존(재사용 불가).
+
+## 7. 추가 작업 (같은 날) — 동그라미 이니셜 정리 + 고객사 등록
+
+- **이니셜 정리(`customers/index.vue`)**: 동그라미 아바타가 `(주)맑은소프트` → `(` 로 표시되던 문제. `avatarChar()` 헬퍼 — 선행 `(주)`·`㈜`·`주식회사` 접두어 제거 후 첫 글자(`맑`). Pages alias `c288abc6`.
+- **고객사 등록(운영자 생성 플로우 신설)**: 당초 "미구현"으로 두었던 등록 기능을 추가.
+  - api **`POST /ops/companies`** — 회사(name·companyType·bizNo·ceoName·approvalState) + **소유자 계정**(loginid·password·name·email·phone) 동시 생성. `loginid` 전역 중복 차단(409), 비밀번호 PBKDF2 해싱(`hashPassword` 재사용), 운영자 생성은 기본 `approved`. (회사는 로그인 계정이 있어야 쓸 수 있어 가입 플로우처럼 owner 동반 생성.)
+  - admin: 헤더 **'고객사 등록' 버튼 + 모달**(회사 정보 + 소유자 계정) → `server/api/admin/companies.post.ts` 프록시. 필수값(회사명·아이디 3자+·비번 8자+) 검증, 등록 후 목록 새로고침.
+  - 워커 + Pages(alias `1667b405`) 배포. 라이브 검증: 등록 성공(회사+계정 생성), 중복 아이디 409, 임시 테스트 회사는 soft-delete로 정리(active 총계 5건 복귀).
+- 커밋: api `560978c`, admin `c9ed709`(이니셜)·`7f67285`(등록).
