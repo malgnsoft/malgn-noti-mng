@@ -7,6 +7,8 @@
 >
 > **치환 토큰**: `{APP}`=앱/Pages 프로젝트명(예: `myproj-mng`) · `{PROJECT}`=대상 프로젝트 표시명 ·
 > `{D1_NAME}`=D1 DB명 · `{D1_ID}`=D1 database_id · `{REPO}`=GitHub 레포 URL.
+>
+> **마지막 갱신**: 2026-06-09 (WBS CRUD·전체화면 스크롤·실시간 기준일·날짜 ISO 함정 반영).
 
 ---
 
@@ -156,6 +158,10 @@ doc/                          # 마크다운 문서 + history/
 - **CRUD**: 행 hover 시 수정/삭제, ＋추가 → 등록/수정 모달. `/api/wbs` 호출 후 `refresh()`.
 - **상태 규칙**: `done`(progress≥100) · `plan`(시작 없음/미래) · `late`(종료<오늘 & <100%) · `active`(그 외).
 - **진척 집계 규칙(중요)**: 전체/단계 진척은 **단계 가중평균**(보드와 일치)으로, 작업 카운트·구분 롤업은 작업 기준. (단순 평균은 화면 단위가 잘게 쪼개진 경우 과소평가됨 — 가중치 권장.)
+- **전체 화면 + 스크롤**: WBS는 풀스크린 앱 — 레이아웃 **푸터 숨김 + GNB 비고정**(`/wbs`에서 `position:static`). 스크롤하면 **GNB·상단 KPI(topbar)는 사라지고**, **툴바+간트 헤더는 `.wbs-pane`(`position:sticky; top:0; height:100vh`)로 상단 고정**. (`.wbsx`는 고정 높이 없이 자연 흐름 → 페이지 스크롤로 topbar가 밀려 올라감. 간트 자체는 `.wbs-pane` 안에서 `flex:1; overflow:auto`로 행·가로 스크롤.)
+- **실시간 기준일(오늘)**: KST = `new Date(Date.now()+9h).toISOString().slice(0,10)`. `useState`로 SSR 하이드레이트 + `onMounted` 클라이언트 보정(CDN 캐시 대비). 오늘 기준선·상태(plan/late/active) 판정에 사용. 부제 기준일 표기는 `yyyy.MM.dd`.
+- **호버/메모**: 담당·작업명이 잘리면(`scrollWidth>clientWidth`) **커스텀 호버 툴팁**으로 전체 표시(네이티브 `title`은 비신뢰 → 커스텀). 메모(note) 있는 작업은 **메모 아이콘 → 클릭 시 팝오버**로 확인.
+- **단계 관리**: 단계 가중치 합 100 권장. 미가중 단계(예: QA)는 `weight 0`도 가능(표시만, 전체에 영향 없음)·가중치 부여도 가능. 단계 추가/삭제/번호변경 시 **D1(`stage`/`wbs_item`) + 코드(`wbsSteps`/`wbsStageMeta`)를 함께** 갱신하고, 트리는 번호순 정렬(`steps.sort((a,b)=>a.num-b.num)`).
 
 ### 5.4 문서 `/docs`, `/docs/[...slug]` (프리렌더)
 - `/docs`: `useDocs()`로 doc 목록. `/docs/[...slug]`: `queryCollection('docs').path('/'+slug)` → `<ContentRenderer>`.
@@ -208,6 +214,8 @@ export const wbsItem = sqliteTable('wbs_item', {
 ```
 - 마이그레이션은 `pnpm db:generate`(drizzle-kit) → `server/db/migrations/`.
 - 신규 D1엔 `wrangler d1 migrations apply {D1_NAME} --remote`로 적용. (기존 테이블이 있으면 충돌하므로, 처음 구축 시 migrations apply 사용 권장.)
+- **날짜는 ISO(`YYYY-MM-DD`)로만 저장** — 간트 타임라인 범위는 날짜 문자열 min/max로 계산하므로 `5/12` 같은 비ISO가 섞이면 범위가 깨져 막대·오늘선이 사라진다(§9-8).
+- **CRUD 패턴**: `wbs_item`처럼 `id` autoincrement + `sort`(표시 순서). 등록은 `sort = max(id)+1`로 말미 추가. 컬럼 `grp`↔화면 키 `group`은 API 레이어에서 매핑.
 
 `server/utils/db.ts` (공용 D1 접근):
 ```ts
@@ -282,6 +290,10 @@ export default defineEventHandler(async (event) => {
 5. **D1 진위 확인** — 배포 후 D1 값 1건을 바꿔 응답에 반영되는지로 "폴백이 아닌 실제 D1" 확인.
 6. **로컬 dev 소켓 이슈(특정 샌드박스 한정)** — macOS 기본 `$TMPDIR`가 길어 Nuxt vite-node Unix 소켓이 104자 제한 초과 시 `TMPDIR=/tmp/x pnpm dev`로 우회(일반 환경은 불필요).
 7. **진척 집계 일관성** — 현황판/대시보드/WBS의 "전체 진척"은 동일 산식(가중평균) 사용. 화면을 잘게 쪼갠 WBS의 단순 평균과 단계 가중평균은 크게 달라질 수 있음.
+8. **날짜 ISO 통일(중요)** — `wbs_item`·`task`의 `start`/`end`/날짜는 전부 `YYYY-MM-DD`. 외부(보드 `M/D` 등)에서 이식할 때 반드시 ISO로 변환. 비ISO가 1건이라도 섞이면 문자열 max 비교가 깨져(예: `"5/12" > "2026-07-03"`) 타임라인 전체가 망가진다.
+9. **D1 단계 id 재명명/번호 변경** — `task→stage` FK 때문에 stage `id`를 바꿀 땐 SQL 첫 줄에 `PRAGMA defer_foreign_keys=true;`를 두고 같은 파일에서 stage + task를 함께 UPDATE(커밋 시점에 일관). 단계 삭제/번호변경은 **D1(`stage`·`wbs_item`) + 코드(`wbsSteps`·`wbsStageMeta`)** 를 동시 갱신.
+10. **인라인 코드 줄바꿈** — prose의 `:not(pre) > code`는 `white-space: normal; overflow-wrap: anywhere`로(=`nowrap`이면 긴 명령/URL이 본문 폭을 넘어 가로 오버플로). `pre`는 `overflow-x: auto; max-width: 100%`.
+11. **풀스크린 페이지 스크롤** — 페이지를 풀스크린(`height` 고정 + 내부 스크롤)으로 만들면 상단 바가 항상 남는다. "상단 바는 사라지고 헤더만 고정"을 원하면 자연 흐름 + `position:sticky; top:0; height:100vh` 패널 패턴을 쓰고, 해당 페이지에서 GNB를 `position:static`으로(레이아웃에서 라우트 조건부) 둔다.
 
 ---
 
