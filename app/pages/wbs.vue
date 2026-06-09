@@ -242,7 +242,8 @@ async function del(t: Item) {
   catch (e) { alert('삭제 실패: ' + (e instanceof Error ? e.message : '')) }
 }
 
-const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
+const subtitle = 'WBS 간트 · 화면 단위 · 기준일'
+const todayDot = computed(() => today.value.replace(/-/g, '.'))
 </script>
 
 <template>
@@ -251,7 +252,7 @@ const subtitle = 'WBS 간트 · Step 1 · 3 · 5 · 화면 단위 · 기준일'
     <header class="topbar">
       <div class="title-wrap">
         <h1>전체 일정</h1>
-        <span class="sub">{{ subtitle }} <b>{{ md(today) }}</b></span>
+        <span class="sub">{{ subtitle }} <b>{{ todayDot }}</b></span>
       </div>
       <div class="kpis">
         <div class="kpi overall"><span class="v">{{ kpi.avg }}%</span><span class="l">전체 진척 · {{ kpi.n }}개 작업</span><div class="meter"><i :style="{ width: kpi.avg + '%' }" /></div></div>
