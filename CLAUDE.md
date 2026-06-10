@@ -208,7 +208,7 @@ pnpm test
 
 **작업 이력 (앞으로 [`malgn-noti-mng`](../malgn-noti-mng)에서 작성·갱신)**
 
-- ⚠️ **작성처 변경(2026-06-05~)**: 작업 이력(history)은 이제 **관리 레포 `malgn-noti-mng`의 `docs/history/`에서 작성하고 갱신한다.** `malgn-noti`의 `doc/history/`에는 더 이상 신규 작성하지 않는다(기존 파일은 이관 완료분).
+- ⚠️ **작성처 변경(2026-06-05~)**: 작업 이력(history)은 이제 **관리 레포 `malgn-noti-mng`의 `docs/history/`에서 작성하고 갱신한다.** `malgn-noti`의 `docs/history/`에는 더 이상 신규 작성하지 않는다(기존 파일은 이관 완료분).
 - `../malgn-noti-mng/docs/history/history.yyyyMMdd.md` — **하루 한 파일**, 작업이 있는 날만 생성.
 - 구조: ① 한 줄 요약 → ② 번호별 섹션(결정/코드/배포) → ③ 산출물 → ④ 다음 단계·한계.
 - **같은 날 추가 작업은 그날 파일에 `§N` 추가**(새 파일 만들지 않음), 한 줄 요약·산출물 갱신, `../malgn-noti-mng/docs/history/README.md` 인덱스 표 갱신.
@@ -278,7 +278,7 @@ UI 컴포넌트와 도메인 타입은 admin과 상당 부분 공유 가능 — 
 - **구현 스택**: `malgn-noti`와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3, pnpm, Pinia, ESLint) + **@nuxt/content**(`docs/` 마크다운 렌더링). 디자인 시스템(`app/assets/css/main.css`·`app/app.config.ts`)도 그대로 이식해 형제 앱과 시각 일관성 유지. `@nuxtjs/tailwindcss` 미설치 원칙 동일.
   - 화면: `/`(대시보드) · `/docs`(문서 목록·렌더) · `/history`(작업 이력 타임라인). 콘텐츠 소스는 `content.config.ts`에서 `docs/` 트리로 매핑.
   - 개발: `pnpm install` → `pnpm dev`. `better-sqlite3`는 `@nuxt/content`의 SQLite 어댑터 — `package.json`의 `pnpm.onlyBuiltDependencies`로 네이티브 빌드 허용 설정됨.
-- **보관 내용**: 여러 레포에 공통 적용되는 핵심 참조 문서(디자인·스택·코딩 컨벤션·WBS), 도메인 기획 정본(회원·인증·계약 등), 일자별 작업 이력 등 `malgn-noti`의 `doc/` 트리 전체를 복사·집약한다.
+- **보관 내용**: 여러 레포에 공통 적용되는 핵심 참조 문서(디자인·스택·코딩 컨벤션·WBS), 도메인 기획 정본(회원·인증·계약 등), 일자별 작업 이력 등 `malgn-noti`의 `docs/` 트리 전체를 복사·집약한다.
 - **작업 이력 작성처**: 앞으로 일자별 작업 이력(`docs/history/`)은 **이 레포에서 직접 작성·갱신**한다. `malgn-noti`에는 더 이상 신규 history를 만들지 않는다. 상세 규칙은 §7.1 "작업 이력" 참조.
 - **현행화 규칙**: 이 `CLAUDE.md`는 `malgn-noti`의 것과 **항상 동일하게** 유지한다 — `malgn-noti`의 내용을 기본으로 하고 관리 레포 보강(본 절)을 더한 형태. 한쪽을 고치면 다른 쪽도 동일하게 반영한다. 정본 문서가 갱신되면 `malgn-noti-mng/docs/`로도 복사해 현행화한다.
 

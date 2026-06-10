@@ -593,7 +593,7 @@ export const boardSeed: WbsDocument = {
           "status": "done",
           "owner": "김도형",
           "note": "STACK.md — 3 레포 책임 + Cloudflare/AWS 혼합 + NHN 통합",
-          "href": "https://github.com/malgnsoft/malgn-noti/blob/main/doc/STACK.md",
+          "href": "https://github.com/malgnsoft/malgn-noti/blob/main/docs/STACK.md",
           "targetDate": "5/14",
           "completionDate": "5/14"
         },

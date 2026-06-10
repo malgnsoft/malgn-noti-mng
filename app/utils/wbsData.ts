@@ -78,7 +78,7 @@ export const wbsGantt: GanttItem[] = [
   { step: 3, group: 'BackOffice 2차', name: 'API 관리', owner: '김경은', progress: 0 },
 
   // ── Step 5 · 서비스 개발 (화면 단위) ────────────────────
-  { step: 5, group: '설계 및 준비', name: '아키텍처 설계', owner: O, start: '2026-05-12', end: '2026-05-14', progress: 100, href: 'https://github.com/malgnsoft/malgn-noti/blob/main/doc/STACK.md' },
+  { step: 5, group: '설계 및 준비', name: '아키텍처 설계', owner: O, start: '2026-05-12', end: '2026-05-14', progress: 100, href: 'https://github.com/malgnsoft/malgn-noti/blob/main/docs/STACK.md' },
   { step: 5, group: '설계 및 준비', name: '데이터 모델링', owner: O, start: '2026-05-15', end: '2026-05-22', progress: 80 },
   { step: 5, group: '설계 및 준비', name: '사용자단 레이아웃 설계', owner: O, start: '2026-05-13', end: '2026-05-20', progress: 100, href: 'https://malgn-noti.pages.dev/guide' },
   { step: 5, group: '설계 및 준비', name: '사용자단 화면 개발', owner: O, start: '2026-05-14', end: '2026-05-22', progress: 95, href: 'https://malgn-noti.pages.dev/sitemap' },

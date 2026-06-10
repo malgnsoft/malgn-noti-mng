@@ -212,7 +212,7 @@
 
 | ID | 작업 | 상태 | 담당 | 산출물 / 메모 | 목표일 | 완료일 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 5-1-1 | 아키텍처 설계 | ✅ | 김도형 | [malgn-noti/doc/STACK.md](STACK.md) — 3 레포 책임 분리 + Cloudflare/AWS 혼합 토폴로지 + NHN 통합 모델 | 5/14 | 5/14 |
+| 5-1-1 | 아키텍처 설계 | ✅ | 김도형 | [malgn-noti/docs/STACK.md](STACK.md) — 3 레포 책임 분리 + Cloudflare/AWS 혼합 토폴로지 + NHN 통합 모델 | 5/14 | 5/14 |
 | 5-1-2 | 데이터 모델링 | ✅ | 김도형 | 49 테이블 데이터 모델(`TB_`·`company_id`·`status INT 1/0/-1` + `*_state`/`*_yn`/`loginid`+`email` 분리), Mermaid ERD 9종, 확장성 전략(월 RANGE 파티셔닝·Hot/Warm/Cold·R2 오프로드) | 5/27 | 5/27 |
 | 5-1-3 | 사용자단 디자인 시스템 | ✅ | 김도형 | Relay-inspired v1.0 ([docs/DESIGN.md](DESIGN.md)) — ink 11단 + 그린 액센트 `#00DC82` + Inter + JetBrains Mono + Pretendard | 5/18 | 5/18 |
 | 5-1-4 | 사용자단 디자인 가이드 (살아있는 카탈로그) | ✅ | 김도형 | [/guide](https://malgn-noti.pages.dev/guide) — 18+ 섹션 라이브 카탈로그 | 5/19 | 5/19 |
