@@ -1,6 +1,6 @@
 # 2026-06-10 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종) + **고객사 상세 전면 재구성(KPI 헤더+7탭+메모 패널)·단가 모달·로그인 이력·탈퇴 계정**·배포.
+> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종) + **고객사 상세 전면 재구성(KPI 헤더+7탭+메모 패널)·단가 모달·로그인 이력·탈퇴 계정**·배포. + **멀티에이전트 개발팀(8역) 구성**해 WBS 김도형 이번 주(6/8~14) 작업을 14태스크로 일괄 처리 — `malgn-noti-api` 크레딧 차감 결선·발송 취소/환불·고객사 statusReason 감사로그·비번 재설정 API + schema 라이브 정합(캠페인·파티션 인덱스·감사로그) + 사용자단 인증 3페이지 + 화면설계서 9종 + QA typecheck 5게이트 GREEN. **4레포 14커밋 origin/main push**.
 
 ---
 
@@ -65,6 +65,29 @@
 - 문서 정본 보강: `DESIGN-ADMIN.md`(컴포넌트 동결 가드레일) + `docs/pages/{dashboard,member/account,member/company}.md`.
 - 검토(diff·typecheck) 후 빌드·배포(alias `03aa7735`), 7개 핵심 라우트 200 검증. (코드 커밋·푸시는 이미 완료된 상태였고, 이번 턴은 검토+배포.)
 
+## 9. 멀티에이전트 개발팀 스프린트 — WBS 김도형 이번 주 작업 일괄
+
+**구성**: 사용자 요청으로 8역 에이전트팀 `malgn-noti-dev`(디자인·퍼블리싱·관리자단·사용자단·API·DBA·화면설계서 검토·QA)를 구성. WBS에서 **김도형 담당 이번 주(6/8~14)** 항목만 추려 14개 태스크로 배분·조율(팀리드 = 본 세션). 4개 레포 동시 작업, 충돌(`schema.ts`·admin 공용 컴포넌트·scrollLock)은 에이전트 간 직접 조율 + 가드레일(승인 전 커밋 금지·레포 스코프 한정·완료 전 typecheck·6/4 인간 WIP 경로 분리).
+
+**`malgn-noti-api` — 크레딧 결선 + 인증 백엔드**:
+- 크레딧 차감 결선(`7255337`): dispatch 워커 `settleCredit()` — 발송 확정 시 성공분 `consume`·실패분 `refund`(멱등키·트랜잭션), `sending` 천이를 조건부 UPDATE로 바꿔 취소 레이스 차단, 정산 직전 크래시로 멈춘(stranded) hold를 재발송 없이 정산하는 resume 분기. `POST /dispatch/requests/:id/cancel`(pending/queued 한정 + `hold_release` 전액 환불). 원장 생명주기 `hold → {consume|refund} | hold_release` 전 구간 append-only·멱등.
+- 고객사 statusReason 감사로그(`7255337`): `PATCH /ops/companies/:id`가 `statusReason` 검증(중지 시 필수) + `TB_AUDIT_LOG` 기록(before/after·ip). 프론트 "일괄변경"이 단건 PATCH N회 호출이라 단건 핸들러가 모두 커버.
+- 비밀번호 재설정 완료 API(`ae4eb89`): `POST /auth/reset-password`(코드 재검증→사용자 매치→새 비번 적용+코드 소비를 한 트랜잭션, 조건부 `consumedAt`로 경합 차단). `email-code/verify`의 `change_email`·`reset_password`를 verify-only purpose로 분리 — 2단계 플로우(미리검증→완료 API 최종소비)가 정상 동작(기존엔 완료 단계가 항상 실패하던 구조).
+
+**`malgn-noti-api`(DB) — schema 라이브 정합**(`9bf53c4`): 캠페인 5테이블(campaign/audience/channelStep/scheduledRun/testRun) ORM 미러(라이브 DDL엔 존재, `schema.ts` 누락 drift), `dispatch_request/item/event`·`credit_ledger` 파티션 보조 인덱스 미러, `TB_AUDIT_LOG`(auditLog) 미러. 전부 라이브 DDL에 이미 존재 → 신규 마이그레이션 불필요.
+
+**`malgn-noti`(사용자단) — 인증 페이지**(`2336c0b`): `reset-password`(이메일+OTP 발송/검증)·`reset-password/new`(완료 API 호출, 10분 TTL 컨텍스트)·`login/security`(2FA 6칸 코드박스+쿨다운) 재작성, 옛 Nuxt UI 스캐폴드→디자인시스템 idiom 통일. 위 reset-password API와 계약 일치(프론트 무수정 동작).
+
+**`malgn-noti-admin` — 회원/고객사 4화면**: §5~§8과 동일 산출물(고객사 상세·목록·대시보드·회원계정 보강 + 위험액션 사유입력/감사로그 + AppModal·AppDrawer scrollLock + DESIGN-ADMIN as-built 정본화 + 로그인이력/탈퇴 페이지네이션·복구 모달). 커밋 `7ffc133`·`e4a3078`·`3dd8bfa`·`eef69e1`·`1a89852`(= §8 배포분).
+
+**화면설계서 9종**: 사용자 `SEND·HISTORY·CONTACTS·SENDER·CAMPAIGN·MANAGE` + admin `dashboard·company·account` 보강 정본. `malgn-noti`(`2336c0b` 외 `2849f08`·`c262e7a`)와 `malgn-noti-mng`(`76dc133`·`c8f3c6e`) 양 레포 동기화.
+
+**QA·품질**: 4레포 typecheck/lint 베이스라인 캡처 → 부채 픽스(admin `server/utils/ops.ts` 타입 `as T`, mng `@types/node` `9f3992e`)로 **typecheck 5게이트(noti·api·mng·admin tc + mng lint) 전부 GREEN**. noti lint 15건·signup dead code는 6/4 WIP 정리 후 별도 패스로 보류.
+
+**커밋·푸시**: 4레포 14커밋 전부 origin/main push. **6/4 인간 WIP(이메일변경 기능 — noti `AppEmailChangeDialog`·`AppMemberInfoPanel`·`stores/auth.ts`·`WBS.md` / api `errors.ts`·`0006` 마이그레이션)는 경로 분리해 우리 커밋에서 제외**(작성자 검토용으로 워킹트리에 보존).
+
+**발견**: ① WBS 진척률이 실제 코드보다 낮게 잡혀 있음(고객사 화면 "10%"였으나 사실상 완성 → 이번 주는 신규 구축이 아니라 **보강·결선·실데이터 미연동 식별** 위주). ② `#14 reset-password`는 6/4 인간 WIP가 아니라 api-dev 이번 세션 구현분(초기 귀속 오판을 팀원 보고로 정정·커밋).
+
 ---
 
 ## 산출물
@@ -73,9 +96,15 @@
 - `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`) · 화면 보강+위험액션 사유+스크롤락+ops 타입 정합(`03aa7735`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
 - 신규 컴포넌트 `app/components/AppPricingDialog.vue`(단가 모달, 목록·상세 공용).
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.
+- **멀티에이전트 팀 스프린트 push(§9)** — `malgn-noti-api`: 크레딧 결선·취소/환불·statusReason 감사로그(`7255337`)·schema 정합(`9bf53c4`)·비번재설정 API(`ae4eb89`). `malgn-noti`: 인증 3페이지(`2336c0b`)·화면설계서 6종(`2849f08`·`c262e7a`). `malgn-noti-mng`: 설계서 집약 9종(`76dc133`·`c8f3c6e`)·`@types/node`(`9f3992e`). 4레포 14커밋 origin/main 반영.
+- 에이전트팀 `malgn-noti-dev`(8역) 구성·운영 — 스프린트 후 유지(idle 대기).
 
 ## 다음 단계 · 한계
 
 - 발신정보 6테이블은 **데모 데이터** — `malgn-noti-api` 운영자 응답(`senderInfo`) 확장 후 실데이터 연동 필요.
 - 일부 컬럼 라벨은 캔버스(22393px) 해상도 한계로 추정 — 실제 Figma 대비 검수 필요.
 - 회원/고객사 잔여 요소(단가 모달·등록 폼 3탭·상태변경 모달 등) 및 다음 카테고리(대시보드 등) 매칭은 후속.
+- **(§9 이월)** `export-jobs` 처리 워커·`flow-definitions` 실행 엔진 — `wrangler.toml` 인프라 바인딩(EXPORT_QUEUE/R2) 결정 동반, api 다음 증분.
+- **(§9 이월)** 로그인 2FA `verify/resend` — 2FA 플래그 `schema`(dba) + `login/security.vue` 프론트 연결(현재 TODO 통과).
+- **(§9 이월)** admin 화면 백엔드 실데이터 연동(senderInfo·발송통계·크레딧·결제·메모·accounts·dashboard 엔드포인트), signup 수동 OTP dead code 제거, noti `lint --fix` 정리 패스(6/4 WIP 정리 후).
+- **(§9)** 6/4 인간 WIP(이메일변경 기능: noti 프론트 3파일 + api `errors.ts`·`0006`)는 미커밋 보존 — 작성자 검토·커밋 필요.
