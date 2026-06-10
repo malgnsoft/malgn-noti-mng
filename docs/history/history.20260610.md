@@ -1,6 +1,6 @@
 # 2026-06-10 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종) + **고객사 상세 전면 재구성(KPI 헤더+7탭+메모 패널)·단가 모달·로그인 이력·탈퇴 계정**·배포. + **멀티에이전트 개발팀(8역) 구성**해 WBS 김도형 이번 주(6/8~14) 작업을 14태스크로 일괄 처리 — `malgn-noti-api` 크레딧 차감 결선·발송 취소/환불·고객사 statusReason 감사로그·비번 재설정 API + schema 라이브 정합(캠페인·파티션 인덱스·감사로그) + 사용자단 인증 3페이지 + 화면설계서 9종 + QA typecheck 5게이트 GREEN. **4레포 14커밋 origin/main push**.
+> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종) + **고객사 상세 전면 재구성(KPI 헤더+7탭+메모 패널)·단가 모달·로그인 이력·탈퇴 계정**·배포. + **멀티에이전트 개발팀(8역) 구성**해 WBS 김도형 이번 주(6/8~14) 작업을 14태스크로 일괄 처리 — `malgn-noti-api` 크레딧 차감 결선·발송 취소/환불·고객사 statusReason 감사로그·비번 재설정 API + schema 라이브 정합(캠페인·파티션 인덱스·감사로그) + 사용자단 인증 3페이지 + 화면설계서 9종 + QA typecheck 5게이트 GREEN. **4레포 14커밋 origin/main push**. + **2차 멀티에이전트팀(`auth-member-dev`, tmux 분할 패널 6역)** — 회원·인증 도메인을 사용자단·관리자단·API에 걸쳐 풀스택 구현: 로그인 2FA·비번 변경·회원 탈퇴(사용자단), 회원관리 4페이지 실 API(관리자단), 2FA·`/me/*`·관리자 accounts API(백엔드). QA 정적 cross-check로 **계약 6/6 GREEN**·회귀 0. 3개 코드 레포 분리 커밋·push.
 
 ---
 
@@ -100,6 +100,30 @@
 
 ---
 
+## 11. 멀티에이전트 2차 스프린트 — 회원·인증 도메인 풀스택(사용자단·관리자단·API)
+
+**구성**: 별도 에이전트팀 `auth-member-dev`(team-lead + `user-auth-dev`·`user-member-dev`·`admin-member-dev`·`api-auth-dev`·`qa`)를 **tmux 분할 패널**로 구성해 회원·인증 도메인을 3개 레포에 걸쳐 동시 개발. 팀리드가 계약 조율·검증·커밋.
+
+**사용자단(`malgn-noti`)**:
+- 로그인 2FA 수직 슬라이스 — `stores/auth.ts`에 `twoFactor` 챌린지 처리(`verifyTwoFactor`/`resendTwoFactor`), `login/index`→`login/security` 분기, `expiresAt` 카운트다운 + resend 쿨다운(서버 `retryAfterSeconds` 동기화).
+- 비밀번호 변경 — `AppPasswordChangePanel` `POST /me/password` 실연동, 특수문자 규칙(`/[^A-Za-z0-9]/`)을 백엔드와 동일화.
+- 회원 탈퇴 — `AppWithdrawDialog`(비밀번호 재인증) 신설, `POST /me/withdraw` 연동.
+- 이메일 변경 다이얼로그 `onConfirm` 비동기 패턴 정리, reset-password 완료 플로우 401 단일 분기.
+
+**관리자단(`malgn-noti-admin`)**: 회원관리 **4페이지 전부 실 API** — `accounts/index`(목록·필터·페이징·CSV·상태변경·임시PW)·`[id]`(상세·로그인이력·PATCH·temp-password)·`withdrawn`(탈퇴 메타 컬럼·복구)·`login-history`(글로벌 성공이력). Nitro 프록시 6종 + `types/account.ts`. **3계층 구조**(브라우저 `/api/admin/*` → Nitro `opsFetch` → 백엔드 `/ops/*` `X-Ops-Token`), `:id`=숫자 user PK.
+
+**백엔드(`malgn-noti-api`)**: 2FA(`POST /auth/2fa/verify`·`resend`, 로그인 챌린지 `twoFactorRequired/pendingToken/sentTo/expiresAt`, `pendingToken` `stage='2fa'` 마커로 access 토큰 오용 차단, 429 `rate_limited`) + `POST /me/password`·`/me/withdraw`(soft-delete `status=-1` + `TB_AUDIT_LOG`) + 관리자 accounts(`GET /ops/accounts` 목록·탈퇴메타 부착, `:id` 4종, `GET /ops/login-history` 성공 로그인 통합 + user-agent 캡처) + 로그인 성공 감사로그. **신규 마이그레이션 불필요**(`security_login_yn/method`·`purpose='login_2fa'`·audit_log 재사용). §9의 reset-password API는 기구현 확인.
+
+**QA**: 정적 cross-check(양 레포 코드 file:line 대조) + typecheck/lint 실행 → **계약 6/6 GREEN**(2FA·`/me/password`·`/me/withdraw`·reset-password·관리자 accounts 상세+목록), 회귀 게이트(noti·api·admin typecheck) green·신규 회귀 0. **라이브 스모크는 외부 Aurora MySQL(Hyperdrive `--remote`) 필요로 불가 → 정적 검증이 상한**(옵션① 채택).
+
+**계약 thrash 사례·교훈**: 2FA 네이밍(`mfa*`↔`twoFactor*`)·경로(`/auth/login/2fa/*`↔`/auth/2fa/*`)에서 **2.5회 왕복** 발생(자기 보고 ≠ 실제 코드, 팀리드 상충 지시 일부 포함). **리터럴 문자열 고정 + 한쪽(FE) 동결 선언 + QA 코드 대조를 단일 진실원**으로 수습. 관리자 accounts base 충돌도 실은 3계층 프록시의 레이어 오해였음(QA가 코드로 규명).
+
+**커밋·푸시**: 3개 코드 레포 **분리 커밋** origin/main push — `malgn-noti d613c76`, `malgn-noti-admin 0cd3149`, `malgn-noti-api a799e4a`. 무관 파일(`docs/WBS.md`, 마이그레이션 `0006`)은 범위 제외.
+
+**배포**(의존성 순서 api→admin→frontend): `malgn-noti-api` Workers Version `bcf24c04`(검증 `/health` 200·`/health/db` mysql 8.0.42·`/auth/2fa/verify·resend` 400·`/ops/accounts·login-history` 403 — 신규 라우트·게이트 라이브) → `malgn-noti-admin` Pages alias `90072cdc`(프로덕션 200) → `malgn-noti`(사용자단) Pages alias `41af0bd2`(프로덕션 200). 신규 마이그레이션 없어 DDL 잡 불요.
+
+---
+
 ## 산출물
 
 - `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`)·WBS 진척 반영(`958e67bf`). 라이브 <https://malgn-noti-mng.pages.dev>.
@@ -110,6 +134,7 @@
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.
 - **멀티에이전트 팀 스프린트 push(§9)** — `malgn-noti-api`: 크레딧 결선·취소/환불·statusReason 감사로그(`7255337`)·schema 정합(`9bf53c4`)·비번재설정 API(`ae4eb89`). `malgn-noti`: 인증 3페이지(`2336c0b`)·화면설계서 6종(`2849f08`·`c262e7a`). `malgn-noti-mng`: 설계서 집약 9종(`76dc133`·`c8f3c6e`)·`@types/node`(`9f3992e`). 4레포 14커밋 origin/main 반영.
 - 에이전트팀 `malgn-noti-dev`(8역) 구성·운영 — 스프린트 후 유지(idle 대기).
+- **2차 멀티에이전트팀 push·배포(§11)** — `malgn-noti`(사용자단 2FA·비번변경·탈퇴): `d613c76` → Pages alias `41af0bd2`. `malgn-noti-admin`(관리자 회원관리 4페이지·Nitro 프록시 6종·`types/account.ts`): `0cd3149` → Pages alias `90072cdc`. `malgn-noti-api`(2FA·`/me/*`·관리자 accounts API·감사로그): `a799e4a` → Workers Version `bcf24c04`. 3레포 origin/main push + 프로덕션 배포(api→admin→frontend 순)·전부 200/라우트 검증. 에이전트팀 `auth-member-dev`(6역, tmux 분할) 운영 — idle 유지.
 
 ## 다음 단계 · 한계
 
@@ -117,6 +142,7 @@
 - 일부 컬럼 라벨은 캔버스(22393px) 해상도 한계로 추정 — 실제 Figma 대비 검수 필요.
 - 회원/고객사 잔여 요소(단가 모달·등록 폼 3탭·상태변경 모달 등) 및 다음 카테고리(대시보드 등) 매칭은 후속.
 - **(§9 이월)** `export-jobs` 처리 워커·`flow-definitions` 실행 엔진 — `wrangler.toml` 인프라 바인딩(EXPORT_QUEUE/R2) 결정 동반, api 다음 증분.
-- **(§9 이월)** 로그인 2FA `verify/resend` — 2FA 플래그 `schema`(dba) + `login/security.vue` 프론트 연결(현재 TODO 통과).
+- ~~**(§9 이월)** 로그인 2FA `verify/resend`~~ → **§11에서 해소** — `POST /auth/2fa/verify`·`resend` + `login/security.vue` 실연동(기존 `security_login_yn/method` 재사용, 스키마 추가 없음).
+- **(§11 후속, 저순위)** 실패 로그인 로깅(enumeration 보안정책 합의 필요)·`must_change_password` 컬럼(임시PW 강제변경)·`TB_LOGIN_HISTORY` 전용 테이블(현재 audit_log 대체)·FE nullable 타입 정합·정지 PATCH 백엔드측 사유 강제 — 전부 DBA/정책 동반. DB 의존 런타임 검증(OTP 소비·동시성·401 분기)은 라이브 스모크(Aurora 환경)로만 확인 가능.
 - **(§9 이월)** admin 화면 백엔드 실데이터 연동(senderInfo·발송통계·크레딧·결제·메모·accounts·dashboard 엔드포인트), signup 수동 OTP dead code 제거, noti `lint --fix` 정리 패스(6/4 WIP 정리 후).
 - **(§9)** 6/4 인간 WIP(이메일변경 기능: noti 프론트 3파일 + api `errors.ts`·`0006`)는 미커밋 보존 — 작성자 검토·커밋 필요.
