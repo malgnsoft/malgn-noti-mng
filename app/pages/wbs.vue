@@ -245,6 +245,19 @@ async function del(t: Item) {
 
 const subtitle = 'WBS 간트 · 화면 단위 · 기준일'
 const todayDot = computed(() => today.value.replace(/-/g, '.'))
+
+// 기준일 클릭 → 오늘 컬럼이 타임라인 좌측(진척 시작점)에 오도록 가로 스크롤
+const ganttEl = ref<HTMLElement>()
+function scrollToToday() {
+  const el = ganttEl.value
+  if (!el) return
+  const line = el.querySelector('.todayline') as HTMLElement | null
+  if (!line) return
+  const infoW = (el.querySelector('.ihead') as HTMLElement | null)?.clientWidth ?? 0
+  const visTimeline = el.clientWidth - infoW
+  const target = line.offsetLeft - infoW - visTimeline * 0.33
+  el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -253,7 +266,7 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
     <header class="topbar">
       <div class="title-wrap">
         <h1>전체 일정</h1>
-        <span class="sub">{{ subtitle }} <b>{{ todayDot }}</b></span>
+        <span class="sub">{{ subtitle }} <b class="today-jump" title="클릭 시 오늘로 이동" @click="scrollToToday">{{ todayDot }}</b></span>
       </div>
       <div class="kpis">
         <div class="kpi overall"><span class="v">{{ kpi.avg }}%</span><span class="l">전체 진척 · {{ kpi.n }}개 작업</span><div class="meter"><i :style="{ width: kpi.avg + '%' }" /></div></div>
@@ -295,7 +308,7 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
     </div>
 
     <!-- Gantt -->
-    <div class="gantt">
+    <div ref="ganttEl" class="gantt">
       <div class="ginner">
         <div class="gridbg" :style="{ width: trackWidth }">
           <div class="daylines" />
@@ -461,6 +474,8 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
 .title-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .topbar h1 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
 .sub { color: var(--ink-2); font-size: 12.5px; font-weight: 500; } .sub b { color: var(--ink); font-weight: 700; }
+.today-jump { cursor: pointer; border-bottom: 1px dashed var(--ink-3); transition: color .12s; }
+.today-jump:hover { color: var(--accent); border-bottom-color: var(--accent); }
 .kpis { display: flex; gap: 10px; flex-shrink: 0; }
 .kpi { background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; padding: 8px 13px; min-width: 76px; display: flex; flex-direction: column; gap: 2px; }
 .kpi .v { font-size: 19px; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
