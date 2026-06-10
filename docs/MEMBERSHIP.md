@@ -126,10 +126,10 @@
 
 | 기획 MD | 라우트(예정) | 역할 |
 | --- | --- | --- |
-| [member/company.md](../../malgn-noti-admin/doc/pages/member/company.md) | `/admin/member/company` · `/[id]` | 고객사 목록·**승인/반려**·한도·차단 |
-| [member/account.md](../../malgn-noti-admin/doc/pages/member/account.md) | `/admin/member/account` · `/[id]` | 개별 사용자 계정·OTP 진단·임시 비번·2FA 초기화 |
-| [member/audit.md](../../malgn-noti-admin/doc/pages/member/audit.md) | `/admin/member/audit` | 감사 로그 |
-| [member/block.md](../../malgn-noti-admin/doc/pages/member/block.md) | `/admin/member/block` | 강제 차단·복구 |
+| [member/company.md](../../malgn-noti-admin/docs/pages/member/company.md) | `/admin/member/company` · `/[id]` | 고객사 목록·**승인/반려**·한도·차단 |
+| [member/account.md](../../malgn-noti-admin/docs/pages/member/account.md) | `/admin/member/account` · `/[id]` | 개별 사용자 계정·OTP 진단·임시 비번·2FA 초기화 |
+| [member/audit.md](../../malgn-noti-admin/docs/pages/member/audit.md) | `/admin/member/audit` | 감사 로그 |
+| [member/block.md](../../malgn-noti-admin/docs/pages/member/block.md) | `/admin/member/block` | 강제 차단·복구 |
 
 → **운영자단 화면은 모두 미개발**(셸 + 기획만). 사업자 승인은 현재 라이브 DB 직접 UPDATE로만 처리 가능. **승인 화면은 P0 1순위**.
 

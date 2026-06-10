@@ -218,7 +218,7 @@
 | 5-1-4 | 사용자단 디자인 가이드 (살아있는 카탈로그) | ✅ | 김도형 | [/guide](https://malgn-noti.pages.dev/guide) — 18+ 섹션 라이브 카탈로그 | 5/19 | 5/19 |
 | 5-1-5 | 관리자단 부트스트랩 + 셸 레이아웃 | ✅ | 김도형 | Nuxt 3 + Nuxt UI v3 + LNB(256px·8그룹) + TopBar(64px) + 첫 배포 | 5/27 | 5/27 |
 | 5-1-6 | 관리자단 디자인 가이드 | ✅ | 김도형 | [admin /guide](https://malgn-noti-admin.pages.dev/guide) — 14 섹션 단일 페이지 | 5/27 | 5/27 |
-| 5-1-7 | 관리자단 페이지 기획 MD | ✅ | 김도형 | `malgn-noti-admin/doc/pages/` 33개 MD (8 그룹 + 32 sub) | 5/27 | 5/27 |
+| 5-1-7 | 관리자단 페이지 기획 MD | ✅ | 김도형 | `malgn-noti-admin/docs/pages/` 33개 MD (8 그룹 + 32 sub) | 5/27 | 5/27 |
 
 ## 5-2. API 서버 (`malgn-noti-api`)
 
