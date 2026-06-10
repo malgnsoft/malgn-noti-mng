@@ -96,6 +96,7 @@ const kpi = computed(() => {
   return { n: allTasks.value.length, avg, ...c }
 })
 function stepProgress(num: number) { return wbsStageMeta[num]?.progress ?? 0 }
+function stepWeight(num: number) { return wbsStageMeta[num]?.weight ?? 0 }
 const peopleCount = computed(() => {
   const m: Record<string, number> = {}; for (const p of PEOPLE) m[p] = 0
   for (const t of allTasks.value) { if (!t.who.length) m['미정']!++; else t.who.forEach(w => { if (w in m) m[w]!++ }) }
@@ -330,7 +331,10 @@ const todayDot = computed(() => today.value.replace(/-/g, '.'))
               <div class="scell">
                 <button class="chev" :data-open="stepOpen[r.id] !== false" @click="stepOpen[r.id] = stepOpen[r.id] === false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6" /></svg></button>
                 <span class="badge">{{ r.badge }}</span><span class="stitle">{{ r.title }}</span>
-                <span class="scount">· {{ r.a.count }}개 · {{ stepProgress(r.num) }}%</span>
+                <span class="scount">· {{ r.a.count }}개</span>
+                <span class="sweight">비중 {{ stepWeight(r.num) }}%</span>
+                <span class="sdot">·</span>
+                <span class="sprog">진행 {{ stepProgress(r.num) }}%</span>
               </div>
             </div>
             <div class="track" :style="{ width: trackWidth }"><div v-if="r.a.hasBar" class="rollup" style="background:var(--band-2)" :style="rollStyle(r.a)"><i style="background:var(--accent);opacity:1" :style="{ width: stepProgress(r.num) + '%' }" /></div></div>
@@ -569,6 +573,9 @@ a.tname { color: var(--accent); text-decoration: none; } a.tname:hover { text-de
 .badge { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--ink); padding: 2px 8px; border-radius: 5px; }
 .stitle { font-size: 13.5px; font-weight: 800; color: var(--ink); }
 .scount { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+.sweight { font-size: 11px; color: var(--ink-3); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sdot { color: var(--line-2); font-size: 11px; }
+.sprog { font-size: 11px; color: var(--ink-2); font-weight: 700; font-variant-numeric: tabular-nums; }
 .grow .info { height: var(--grp-h); background: var(--surface); align-items: center; }
 .grow .track { height: var(--grp-h); }
 .grow:hover .info { background: var(--surface-2); }
