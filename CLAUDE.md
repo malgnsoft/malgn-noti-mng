@@ -6,7 +6,7 @@
 >
 > **IA 참조 시안**: https://malgn-notifications.pages.dev/#/pagelists (총 263 페이지/팝업, 16 카테고리. **IA(페이지 목록·라우트 구조)** 한정 정본.)
 >
-> **디자인 정본(SoT)**: [`doc/DESIGN.md`](./doc/DESIGN.md) — `design_handoff_malgn_noti` Relay-inspired Design System v1.0. (2026-05-18 시안 기반 디자인에서 전면 피벗. 시안의 디자인 언어는 더 이상 적용하지 않음 — IA만 참조.)
+> **디자인 정본(SoT)**: [`docs/DESIGN.md`](./docs/DESIGN.md) — `design_handoff_malgn_noti` Relay-inspired Design System v1.0. (2026-05-18 시안 기반 디자인에서 전면 피벗. 시안의 디자인 언어는 더 이상 적용하지 않음 — IA만 참조.)
 
 ---
 
@@ -45,7 +45,7 @@
 - **프레임워크**: Nuxt 3 (Vue 3, `<script setup>`, TypeScript)
 - **상태 관리**: Pinia
 - **UI / 스타일**: **Nuxt UI v3** (MIT, Reka UI + Tailwind CSS v4 기반). `@nuxtjs/tailwindcss`는 **설치하지 않는다** — Nuxt UI 모듈이 Tailwind를 통합 관리.
-- **디자인 시스템**: Relay-inspired v1.0 ([`doc/DESIGN.md`](./doc/DESIGN.md) 정본) — ink 무채색 11단 + 단일 그린 액센트 `#00DC82`, 1px hairline, 저밀도. 토큰은 [`app/assets/css/main.css`](./app/assets/css/main.css), Nuxt UI 색상은 `app.config.ts`(`primary`/`neutral` = `zinc`).
+- **디자인 시스템**: Relay-inspired v1.0 ([`docs/DESIGN.md`](./docs/DESIGN.md) 정본) — ink 무채색 11단 + 단일 그린 액센트 `#00DC82`, 1px hairline, 저밀도. 토큰은 [`app/assets/css/main.css`](./app/assets/css/main.css), Nuxt UI 색상은 `app.config.ts`(`primary`/`neutral` = `zinc`).
 - **아이콘**: Iconify — 기본 `lucide`(핸드오프 기준)/`heroicons`, `@iconify-json/bi` 보유
 - **폰트**: **Inter**(UI) + **JetBrains Mono**(숫자/ID) + **Pretendard**(한국어 fallback) + Instrument Serif(대형 디스플레이). `nuxt.config.ts` head 주입.
 - **API 통신**: `$fetch` / `useFetch` — 항상 [`malgn-noti-api`](../malgn-noti-api) 경유
@@ -208,20 +208,20 @@ pnpm test
 
 **작업 이력 (앞으로 [`malgn-noti-mng`](../malgn-noti-mng)에서 작성·갱신)**
 
-- ⚠️ **작성처 변경(2026-06-05~)**: 작업 이력(history)은 이제 **관리 레포 `malgn-noti-mng`의 `doc/history/`에서 작성하고 갱신한다.** `malgn-noti`의 `doc/history/`에는 더 이상 신규 작성하지 않는다(기존 파일은 이관 완료분).
-- `../malgn-noti-mng/doc/history/history.yyyyMMdd.md` — **하루 한 파일**, 작업이 있는 날만 생성.
+- ⚠️ **작성처 변경(2026-06-05~)**: 작업 이력(history)은 이제 **관리 레포 `malgn-noti-mng`의 `docs/history/`에서 작성하고 갱신한다.** `malgn-noti`의 `doc/history/`에는 더 이상 신규 작성하지 않는다(기존 파일은 이관 완료분).
+- `../malgn-noti-mng/docs/history/history.yyyyMMdd.md` — **하루 한 파일**, 작업이 있는 날만 생성.
 - 구조: ① 한 줄 요약 → ② 번호별 섹션(결정/코드/배포) → ③ 산출물 → ④ 다음 단계·한계.
-- **같은 날 추가 작업은 그날 파일에 `§N` 추가**(새 파일 만들지 않음), 한 줄 요약·산출물 갱신, `../malgn-noti-mng/doc/history/README.md` 인덱스 표 갱신.
-- 큰 마일스톤·배포 직후 기록. 형식 상세는 [`../malgn-noti-mng/doc/history/README.md`](../malgn-noti-mng/doc/history/README.md).
+- **같은 날 추가 작업은 그날 파일에 `§N` 추가**(새 파일 만들지 않음), 한 줄 요약·산출물 갱신, `../malgn-noti-mng/docs/history/README.md` 인덱스 표 갱신.
+- 큰 마일스톤·배포 직후 기록. 형식 상세는 [`../malgn-noti-mng/docs/history/README.md`](../malgn-noti-mng/docs/history/README.md).
 - 작성·갱신 후 **`malgn-noti-mng` 레포에 커밋·푸시**한다(코드 레포와 분리 관리).
 
-**페이지 정본 (`doc/pages/`)**
+**페이지 정본 (`docs/pages/`)**
 
-- 사용자단 페이지의 **기획·로직·플로우 정본**은 `doc/pages/<UPPER_CASE>.md` (한 페이지/도메인 한 파일).
+- 사용자단 페이지의 **기획·로직·플로우 정본**은 `docs/pages/<UPPER_CASE>.md` (한 페이지/도메인 한 파일).
 - 파일명: 페이지의 핵심 도메인을 대문자 ASCII로 (예: `SIGNUP.md`·`CONTRACT.md`). 라우트 그대로 옮기지 말 것 (`account/contract.md` ❌).
 - 권장 구조: ① 페이지 개요 (라우트·메인 컴포넌트·셸·권한) → ② 진입 경로 → ③ 화면 구성 → ④ 사용자 액션 매트릭스 → ⑤ 상태 모델·전이 → ⑥ 정책 결정 사항 → ⑦ API 엔드포인트 → ⑧ DB 테이블 → ⑨ 현재 구현 상태 → ⑩ 알려진 한계·후속 작업.
 - **링크 위생**: 같은 폴더의 다른 페이지 정본은 `./PAGE.md`, 상위는 `../MEMBERSHIP.md`·`../WBS.md`, 코드는 `../../app/...` / `../../../malgn-noti-api/...`.
-- 도메인 통합 인덱스([`doc/MEMBERSHIP.md`](./doc/MEMBERSHIP.md) 등)는 `doc/` 루트에 두고, 그 안에서 페이지 정본을 `./pages/<NAME>.md`로 링크.
+- 도메인 통합 인덱스([`docs/MEMBERSHIP.md`](./docs/MEMBERSHIP.md) 등)는 `docs/` 루트에 두고, 그 안에서 페이지 정본을 `./pages/<NAME>.md`로 링크.
 - 새 페이지를 본격 개발하거나 큰 정책 변경이 있을 때 함께 갱신.
 
 ---
@@ -256,7 +256,7 @@ UI 컴포넌트와 도메인 타입은 admin과 상당 부분 공유 가능 — 
 ## 10. 미정 / TODO
 
 - [x] ~~패키지 매니저 확정~~ → pnpm 확정
-- [x] ~~디자인 시스템~~ → Relay-inspired v1.0 채택([`doc/DESIGN.md`](./doc/DESIGN.md)), Phase 1·2 적용 완료
+- [x] ~~디자인 시스템~~ → Relay-inspired v1.0 채택([`docs/DESIGN.md`](./docs/DESIGN.md)), Phase 1·2 적용 완료
 - [ ] 발신정보·메시지 관리·캠페인·계정/문의·시스템 페이지 — 핸드오프 디자인 미반영(IA만 존재), 별도 협의 필요
 - [ ] 백엔드(`malgn-noti-api`) 연동 — 현재 모든 발송/관리 화면은 목업 데이터로 동작
 - [ ] 멀티 테넌트 라우팅 방식 (서브도메인 vs. 경로 prefix)
@@ -275,12 +275,12 @@ UI 컴포넌트와 도메인 타입은 admin과 상당 부분 공유 가능 — 
 
 - **목적**: 프로젝트 관련 각종 파일을 보관하고, **프로젝트 문서·기록·진행 사항**을 한곳에서 조망·확인한다.
 - **원격 저장소**: <https://github.com/malgnsoft/malgn-noti-mng.git>
-- **구현 스택**: `malgn-noti`와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3, pnpm, Pinia, ESLint) + **@nuxt/content**(`doc/` 마크다운 렌더링). 디자인 시스템(`app/assets/css/main.css`·`app/app.config.ts`)도 그대로 이식해 형제 앱과 시각 일관성 유지. `@nuxtjs/tailwindcss` 미설치 원칙 동일.
-  - 화면: `/`(대시보드) · `/docs`(문서 목록·렌더) · `/history`(작업 이력 타임라인). 콘텐츠 소스는 `content.config.ts`에서 `doc/` 트리로 매핑.
+- **구현 스택**: `malgn-noti`와 **동일 스택**(Nuxt 3 + Tailwind v4 + Nuxt UI v3, pnpm, Pinia, ESLint) + **@nuxt/content**(`docs/` 마크다운 렌더링). 디자인 시스템(`app/assets/css/main.css`·`app/app.config.ts`)도 그대로 이식해 형제 앱과 시각 일관성 유지. `@nuxtjs/tailwindcss` 미설치 원칙 동일.
+  - 화면: `/`(대시보드) · `/docs`(문서 목록·렌더) · `/history`(작업 이력 타임라인). 콘텐츠 소스는 `content.config.ts`에서 `docs/` 트리로 매핑.
   - 개발: `pnpm install` → `pnpm dev`. `better-sqlite3`는 `@nuxt/content`의 SQLite 어댑터 — `package.json`의 `pnpm.onlyBuiltDependencies`로 네이티브 빌드 허용 설정됨.
 - **보관 내용**: 여러 레포에 공통 적용되는 핵심 참조 문서(디자인·스택·코딩 컨벤션·WBS), 도메인 기획 정본(회원·인증·계약 등), 일자별 작업 이력 등 `malgn-noti`의 `doc/` 트리 전체를 복사·집약한다.
-- **작업 이력 작성처**: 앞으로 일자별 작업 이력(`doc/history/`)은 **이 레포에서 직접 작성·갱신**한다. `malgn-noti`에는 더 이상 신규 history를 만들지 않는다. 상세 규칙은 §7.1 "작업 이력" 참조.
-- **현행화 규칙**: 이 `CLAUDE.md`는 `malgn-noti`의 것과 **항상 동일하게** 유지한다 — `malgn-noti`의 내용을 기본으로 하고 관리 레포 보강(본 절)을 더한 형태. 한쪽을 고치면 다른 쪽도 동일하게 반영한다. 정본 문서가 갱신되면 `malgn-noti-mng/doc/`로도 복사해 현행화한다.
+- **작업 이력 작성처**: 앞으로 일자별 작업 이력(`docs/history/`)은 **이 레포에서 직접 작성·갱신**한다. `malgn-noti`에는 더 이상 신규 history를 만들지 않는다. 상세 규칙은 §7.1 "작업 이력" 참조.
+- **현행화 규칙**: 이 `CLAUDE.md`는 `malgn-noti`의 것과 **항상 동일하게** 유지한다 — `malgn-noti`의 내용을 기본으로 하고 관리 레포 보강(본 절)을 더한 형태. 한쪽을 고치면 다른 쪽도 동일하게 반영한다. 정본 문서가 갱신되면 `malgn-noti-mng/docs/`로도 복사해 현행화한다.
 
 ### 관련 프로젝트
 

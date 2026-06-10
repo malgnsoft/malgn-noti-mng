@@ -21,10 +21,10 @@
 | 대시보드 | `/` | 프로젝트 개요(목표·방향) + 진척 요약 + 바로가기 |
 | 현황판 | `/board` | 단계/작업 진척을 시각 카드·행으로 보는 상태 보드 |
 | WBS(간트) | `/wbs` | 일 단위 간트 차트 + 작업 **등록/수정/삭제**(CRUD) |
-| 문서 | `/docs` | `doc/` 마크다운 트리 뷰어 |
+| 문서 | `/docs` | `docs/` 마크다운 트리 뷰어 |
 | 작업 이력 | `/history` | 일자별 작업 이력 타임라인 |
 
-**데이터 정본 2종**: ① 구조화 데이터(진척·작업·단계)는 **Cloudflare D1**, ② 문서/이력은 **`doc/` 마크다운**(@nuxt/content).
+**데이터 정본 2종**: ① 구조화 데이터(진척·작업·단계)는 **Cloudflare D1**, ② 문서/이력은 **`docs/` 마크다운**(@nuxt/content).
 자체 완결형 — 외부 API 의존 없음(원하면 외부 API도 붙일 수 있으나 기본은 자급).
 
 ---
@@ -92,7 +92,7 @@ app/
     AppLogoMark.vue           # 로고 마크(인라인 SVG)
     AppWbsOverview.vue        # 대시보드/현황판 공용 진척 요약(전체% + 단계 박스/행)
   composables/
-    useDocs.ts                # doc/ 콘텐츠 조회 + history 판별·날짜 포맷
+    useDocs.ts                # docs/ 콘텐츠 조회 + history 판별·날짜 포맷
     useWbs.ts                 # /api/board 조회 + 파생 통계(가중평균·카운트·상태)
   pages/
     index.vue                 # 대시보드
@@ -113,10 +113,10 @@ server/
   db/seed.sql                 # 시드(초기 데이터)
   utils/db.ts                 # useDb(event) → Drizzle/D1
   utils/boardSeed.ts          # dev(D1 없음) 폴백 시드
-content.config.ts             # @nuxt/content: 소스를 doc/ 로 매핑
+content.config.ts             # @nuxt/content: 소스를 docs/ 로 매핑
 nuxt.config.ts                # 프리렌더 라우트 열거 + cloudflare-pages 프리셋
 wrangler.toml                 # D1 바인딩 + migrations_dir
-doc/                          # 마크다운 문서 + history/
+docs/                          # 마크다운 문서 + history/
 ```
 
 ---
@@ -168,7 +168,7 @@ doc/                          # 마크다운 문서 + history/
 - 링크는 콘텐츠 `path`를 그대로 사용(`/docs${doc.path}`)해 대소문자 일관 유지.
 
 ### 5.5 작업 이력 `/history` (프리렌더)
-- `doc/history/history.yyyyMMdd.md`를 타임라인으로. 파일명에서 날짜 파싱.
+- `docs/history/history.yyyyMMdd.md`를 타임라인으로. 파일명에서 날짜 파싱.
 
 ---
 
@@ -284,7 +284,7 @@ export default defineEventHandler(async (event) => {
 ## 9. 환경·구현 주의사항 (실전 함정)
 
 1. **prose 스타일은 전역 CSS로** — 컴포넌트 scoped로 두면 별도 CSS 청크로 분리돼 프리렌더된 문서 페이지가 그 청크를 링크하지 않아 **스타일이 안 먹는다**. `app/assets/css/prose.css`를 `nuxt.config`의 `css`에 등록.
-2. **프리렌더 크롤 끄기** — `nitro.prerender.crawlLinks: false` + `routes`를 직접 열거. 마크다운 내부 상대 링크를 크롤하면 404·대문자 디렉터리(케이스 민감 Cloudflare에서 404)를 만든다. 라우트는 `doc/` 트리를 재귀 순회해 **소문자**로 생성.
+2. **프리렌더 크롤 끄기** — `nitro.prerender.crawlLinks: false` + `routes`를 직접 열거. 마크다운 내부 상대 링크를 크롤하면 404·대문자 디렉터리(케이스 민감 Cloudflare에서 404)를 만든다. 라우트는 `docs/` 트리를 재귀 순회해 **소문자**로 생성.
 3. **better-sqlite3 네이티브 빌드** — `pnpm.onlyBuiltDependencies`에 등록해야 비대화형 설치에서 빌드된다. `@nuxt/content`가 SQLite 어댑터로 사용.
 4. **@nuxt/content + Cloudflare** — 문서 페이지를 전부 프리렌더하면 런타임 콘텐츠 DB가 필요 없다(런타임 콘텐츠 쿼리를 하지 않도록 유지).
 5. **D1 진위 확인** — 배포 후 D1 값 1건을 바꿔 응답에 반영되는지로 "폴백이 아닌 실제 D1" 확인.
@@ -304,7 +304,7 @@ export default defineEventHandler(async (event) => {
 # 1) D1 생성
 wrangler d1 create {D1_NAME}     # → database_id 확보 → wrangler.toml 작성
 # 2) 설정 파일: nuxt.config.ts(cloudflare-pages 프리셋 + prerender routes),
-#    content.config.ts(doc/ 매핑), app.config.ts, wrangler.toml(D1 바인딩 DB),
+#    content.config.ts(docs/ 매핑), app.config.ts, wrangler.toml(D1 바인딩 DB),
 #    main.css / prose.css 등록
 # 3) 스키마 작성(server/db/schema.ts) → 마이그레이션 생성·적용
 pnpm db:generate
@@ -363,9 +363,9 @@ wrangler pages deploy dist --project-name={APP} --branch=main \
 
 ## 12. 운영 컨벤션 (선택)
 
-- **작업 이력**: `doc/history/history.yyyyMMdd.md` — 하루 한 파일, ① 한 줄 요약 → ② 번호 섹션 → ③ 산출물 → ④ 다음 단계. `doc/history/README.md` 인덱스 갱신.
+- **작업 이력**: `docs/history/history.yyyyMMdd.md` — 하루 한 파일, ① 한 줄 요약 → ② 번호 섹션 → ③ 산출물 → ④ 다음 단계. `docs/history/README.md` 인덱스 갱신.
 - **Git**: 단일 `main`, 커밋·푸시는 요청 시. 무관 파일은 끌어들이지 않기.
-- **문서 정본 동기화**: 코드/구조가 바뀌면 관련 `doc/*.md` 현행화.
+- **문서 정본 동기화**: 코드/구조가 바뀌면 관련 `docs/*.md` 현행화.
 - **CLAUDE.md**: 레포 루트에 프로젝트 목적·스택·구조·컨벤션 요약(이 블루프린트와 별개).
 
 ---
@@ -380,7 +380,7 @@ wrangler pages deploy dist --project-name={APP} --branch=main \
 - [ ] 단계 정의(`board_meta`/`stage` 시드 + `wbsData.ts`의 단계명·가중치 메타)
 - [ ] WBS 초기 작업(`wbs_item` 시드) — 또는 빈 상태로 시작해 화면에서 CRUD
 - [ ] 담당자 목록·아바타 색 맵(`/wbs` 페이지 상수)
-- [ ] `doc/` 문서 트리(이 프로젝트의 문서로 교체)
+- [ ] `docs/` 문서 트리(이 프로젝트의 문서로 교체)
 - [ ] 디자인 액센트색(필요 시 `main.css`/간트 토큰)
 
 > 구조·아키텍처·스키마·API·디자인 토큰·셋업/배포 절차는 그대로 두고, 위 목록의 **데이터·문구·브랜드**만 교체하면 새 프로젝트 관리 앱이 된다.

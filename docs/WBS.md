@@ -2,7 +2,7 @@
 
 > 맑은메시지(가칭) — NHN Cloud Notification Hub 기반 멀티 테넌트 메시징 SaaS.
 >
-> 5단계(준비 → 정책 → 기획·설계 → 디자인 → 개발)를 가중치로 묶어 단일 사이클로 진행. 일별 변경은 [doc/history/](history/)에 누적 기록.
+> 5단계(준비 → 정책 → 기획·설계 → 디자인 → 개발)를 가중치로 묶어 단일 사이클로 진행. 일별 변경은 [docs/history/](history/)에 누적 기록.
 >
 > **마지막 현행화**: 2026-06-04
 
@@ -199,7 +199,7 @@
 
 | ID | 작업 | 상태 | 담당 | 산출물 / 메모 |
 | --- | --- | --- | --- | --- |
-| 4-1 | 디자인 스타일 가이드 | ⚪ | 김양현 | (개발 측에서 [doc/DESIGN.md](DESIGN.md) Relay-inspired v1.0 정본 + [/guide](https://malgn-noti.pages.dev/guide) 라이브 카탈로그를 운영 — 디자인팀 정식 스타일 가이드 별도 필요) |
+| 4-1 | 디자인 스타일 가이드 | ⚪ | 김양현 | (개발 측에서 [docs/DESIGN.md](DESIGN.md) Relay-inspired v1.0 정본 + [/guide](https://malgn-noti.pages.dev/guide) 라이브 카탈로그를 운영 — 디자인팀 정식 스타일 가이드 별도 필요) |
 | 4-2 | 퍼블리싱 MD 파일 | ⚪ | 김양현 | (개발 측에서 Nuxt 3 + Nuxt UI v3 + Tailwind v4로 직접 퍼블리싱 운영 중) |
 
 ---
@@ -214,7 +214,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 5-1-1 | 아키텍처 설계 | ✅ | 김도형 | [malgn-noti/doc/STACK.md](STACK.md) — 3 레포 책임 분리 + Cloudflare/AWS 혼합 토폴로지 + NHN 통합 모델 | 5/14 | 5/14 |
 | 5-1-2 | 데이터 모델링 | ✅ | 김도형 | 49 테이블 데이터 모델(`TB_`·`company_id`·`status INT 1/0/-1` + `*_state`/`*_yn`/`loginid`+`email` 분리), Mermaid ERD 9종, 확장성 전략(월 RANGE 파티셔닝·Hot/Warm/Cold·R2 오프로드) | 5/27 | 5/27 |
-| 5-1-3 | 사용자단 디자인 시스템 | ✅ | 김도형 | Relay-inspired v1.0 ([doc/DESIGN.md](DESIGN.md)) — ink 11단 + 그린 액센트 `#00DC82` + Inter + JetBrains Mono + Pretendard | 5/18 | 5/18 |
+| 5-1-3 | 사용자단 디자인 시스템 | ✅ | 김도형 | Relay-inspired v1.0 ([docs/DESIGN.md](DESIGN.md)) — ink 11단 + 그린 액센트 `#00DC82` + Inter + JetBrains Mono + Pretendard | 5/18 | 5/18 |
 | 5-1-4 | 사용자단 디자인 가이드 (살아있는 카탈로그) | ✅ | 김도형 | [/guide](https://malgn-noti.pages.dev/guide) — 18+ 섹션 라이브 카탈로그 | 5/19 | 5/19 |
 | 5-1-5 | 관리자단 부트스트랩 + 셸 레이아웃 | ✅ | 김도형 | Nuxt 3 + Nuxt UI v3 + LNB(256px·8그룹) + TopBar(64px) + 첫 배포 | 5/27 | 5/27 |
 | 5-1-6 | 관리자단 디자인 가이드 | ✅ | 김도형 | [admin /guide](https://malgn-noti-admin.pages.dev/guide) — 14 섹션 단일 페이지 | 5/27 | 5/27 |
@@ -345,7 +345,7 @@
 | ID | 작업 | 상태 | 담당 | 산출물 / 메모 |
 | --- | --- | --- | --- | --- |
 | 5-4-1 | 셸 + LNB(8 그룹) + TopBar + 디자인 가이드 | ✅ | 김도형 | 부트스트랩·라이브 |
-| 5-4-2 | 페이지 기획 MD (33종) | ✅ | 김도형 | `doc/pages/` — P0: 14 / P1: 13 / P2: 5 |
+| 5-4-2 | 페이지 기획 MD (33종) | ✅ | 김도형 | `docs/pages/` — P0: 14 / P1: 13 / P2: 5 |
 | 5-4-3 | 회원·고객사 관리 (P0) | ⚪ | 김도형 | 회원 발송 이력 / 고객사 결제 상세 / 환불 |
 | 5-4-4 | 시스템 관리 (P0) — 운영자 계정 / RBAC / 감사 로그 | ⚪ | 김도형 | — |
 | 5-4-5 | 요금 / 단가 관리 (P0) | ⚪ | 김도형 | — |

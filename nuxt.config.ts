@@ -2,13 +2,13 @@ import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-// doc/ 트리를 재귀 순회해 모든 문서 라우트를 "정규 소문자"로 열거한다.
+// docs/ 트리를 재귀 순회해 모든 문서 라우트를 "정규 소문자"로 열거한다.
 //  - Cloudflare 는 대소문자를 구분하므로, 앱 링크(소문자 /docs/design)와
 //    프리렌더 산출 경로가 반드시 일치해야 한다.
 //  - 크롤링(crawlLinks)을 끄면 마크다운 문서 안의 상대 링크(./FRONTEND.md →
 //    /docs/FRONTEND)가 대문자 디렉터리를 만드는 문제도 사라진다.
 //  - 파일명 점(history.20260604)으로 크롤러가 라우트를 건너뛰는 문제도 회피.
-const docDir = fileURLToPath(new URL('./doc', import.meta.url))
+const docDir = fileURLToPath(new URL('./docs', import.meta.url))
 
 function collectDocRoutes(dir: string, base = ''): string[] {
   const out: string[] = []
@@ -33,7 +33,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // malgn-noti와 동일 스택: Nuxt UI v3 (Reka UI + Tailwind v4).
-  // @nuxt/content 는 doc/ 마크다운(문서·작업 이력) 렌더링용.
+  // @nuxt/content 는 docs/ 마크다운(문서·작업 이력) 렌더링용.
   modules: [
     '@nuxt/ui',
     '@nuxt/content',
@@ -54,7 +54,7 @@ export default defineNuxtConfig({
     }
   },
 
-  // 콘텐츠 소스(doc/) → content.config.ts 의 collections 에서 매핑.
+  // 콘텐츠 소스(docs/) → content.config.ts 의 collections 에서 매핑.
   content: {
     build: {
       markdown: {
