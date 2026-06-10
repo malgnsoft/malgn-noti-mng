@@ -1,6 +1,6 @@
 # 2026-06-10 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종)·배포.
+> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종) + **고객사 상세 전면 재구성(KPI 헤더+7탭+메모 패널)·단가 모달·로그인 이력·탈퇴 계정**·배포.
 
 ---
 
@@ -44,12 +44,23 @@
 - **그룹 연락처 모달**: 검색 + 테이블(수신사·수신자ID·휴대폰·이메일·토큰) + 연락처 추가·삭제·엑셀.
 - API 미연동 → 데모 데이터로 필터·페이징·CRUD·CSV를 클라이언트에서 동작. typecheck 통과(`@toggle` 시그니처를 `string | number`로 정정).
 
+## 7. admin — 고객사 상세 전면 재구성 + 단가 모달 + 로그인 이력 / 탈퇴 계정
+
+캔버스 정독으로 Figma 상세 구조 확인 후 매칭.
+
+- **고객사 상세(`customers/[id].vue`) 재구성**: 헤더 **KPI 카드**(상태/구분/승인 배지 + 회사명 + 담당자·가입일 / 멀티계정·계약상태·이용기간·**계약 단가 구간 보기**·잔여 크레딧) + **7탭**(기본 정보·담당자·계약관리·발신정보·발송통계·크레딧·결제, `AppTabs`) + **우측 메모 패널**(제목·본문 입력·저장/초기화 + 타임라인·삭제). 발신정보는 §5의 6테이블을 탭으로 이동. 발송통계/크레딧/결제는 데모 데이터.
+- **단가 모달(`AppPricingDialog.vue`) 신설**: 고객사 단가표(채널·유형·최저/제공 단가, 채널 필터·엑셀) + 적용기간(남은일 배지)·상태. 목록 '단가 보기' + 상세 '계약 단가 구간 보기' 공용. (Figma `고객사 단가` 모달)
+- **로그인 이력(`accounts/login-history.vue`)**: 일시·아이디·이름·소속·IP·접속환경·결과(성공/실패)·비고 + 고객사/결과/기간/검색 필터·엑셀.
+- **탈퇴 계정(`accounts/withdrawn.vue`)**: 아이디(취소선)·이름·소속·권한·가입/탈퇴일·탈퇴유형(본인/관리자)·사유 + **복구** 버튼 + 고객사/유형/기간/검색 필터·엑셀.
+- 상세 실데이터(company/users/contracts)는 유지, 나머지 데모. typecheck 통과(기존 `ops.ts` 무관).
+
 ---
 
 ## 산출물
 
 - `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`). 라이브 <https://malgn-noti-mng.pages.dev>.
-- `malgn-noti-admin` Pages 배포 — 고객사 상세 발신정보 섹션(alias `4520c8ab`) + 고객사 그룹(주소록) 페이지(alias `e11d362f`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
+- `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
+- 신규 컴포넌트 `app/components/AppPricingDialog.vue`(단가 모달, 목록·상세 공용).
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.
 
 ## 다음 단계 · 한계
