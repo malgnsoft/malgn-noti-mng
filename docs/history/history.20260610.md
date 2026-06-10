@@ -54,12 +54,23 @@
 - **탈퇴 계정(`accounts/withdrawn.vue`)**: 아이디(취소선)·이름·소속·권한·가입/탈퇴일·탈퇴유형(본인/관리자)·사유 + **복구** 버튼 + 고객사/유형/기간/검색 필터·엑셀.
 - 상세 실데이터(company/users/contracts)는 유지, 나머지 데모. typecheck 통과(기존 `ops.ts` 무관).
 
+## 8. admin — 화면 보강·위험 액션 사유·스크롤락 누적 변경 배포
+
+§5~§7 이후 추가된 커밋(화면 보강·정합)을 검토 후 라이브 반영.
+
+- **위험 액션 사유 입력**: 고객사 상태 일괄 변경(중지 사유 필수)·이용 정지/재개·반려에 사유 입력 + 확인 모달(감사 로그 대비), `patch` 실패 시 모달 유지(재던짐).
+- **스크롤락 이식**: `app/utils/scrollLock.ts` + `AppModal`·`AppDrawer` 카운터 기반 스크롤락(다중 모달 안전).
+- **계정·대시보드 화면 보강**(`accounts/index.vue` +235, `index.vue`), 로그인이력·탈퇴계정 페이지네이션 표기 정리 + 복구 확인 모달.
+- **`server/utils/ops.ts` 타입 정합**(`as T` 캐스트로 TS2322 해소) → **typecheck 전체 통과**.
+- 문서 정본 보강: `DESIGN-ADMIN.md`(컴포넌트 동결 가드레일) + `docs/pages/{dashboard,member/account,member/company}.md`.
+- 검토(diff·typecheck) 후 빌드·배포(alias `03aa7735`), 7개 핵심 라우트 200 검증. (코드 커밋·푸시는 이미 완료된 상태였고, 이번 턴은 검토+배포.)
+
 ---
 
 ## 산출물
 
 - `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`). 라이브 <https://malgn-noti-mng.pages.dev>.
-- `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
+- `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`) · 화면 보강+위험액션 사유+스크롤락+ops 타입 정합(`03aa7735`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
 - 신규 컴포넌트 `app/components/AppPricingDialog.vue`(단가 모달, 목록·상세 공용).
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.
 
