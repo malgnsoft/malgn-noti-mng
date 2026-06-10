@@ -246,8 +246,23 @@ async function del(t: Item) {
 const subtitle = 'WBS 간트 · 화면 단위 · 기준일'
 const todayDot = computed(() => today.value.replace(/-/g, '.'))
 
-// 기준일 클릭 → 오늘 컬럼이 타임라인 좌측(진척 시작점)에 오도록 가로 스크롤
 const ganttEl = ref<HTMLElement>()
+
+// 간트 내부 스크롤 다운 시 GNB·상단(전체일정/KPI)을 접어 간트 영역을 넓힌다.
+// (레이아웃 default.vue가 같은 공유 상태로 GNB를 함께 접음 → 단일 스크롤로 자연스럽게)
+const chromeHidden = useState('wbsChromeHidden', () => false)
+let lastScroll = 0
+function onScroll() {
+  const el = ganttEl.value
+  if (!el) return
+  const t = el.scrollTop
+  if (t > lastScroll && t > 72) chromeHidden.value = true
+  else if (t < lastScroll - 4) chromeHidden.value = false
+  lastScroll = t
+}
+onBeforeUnmount(() => { chromeHidden.value = false })
+
+// 기준일 클릭 → 오늘 컬럼이 타임라인 좌측(진척 시작점)에 오도록 가로 스크롤
 function scrollToToday() {
   const el = ganttEl.value
   if (!el) return
@@ -261,7 +276,7 @@ function scrollToToday() {
 </script>
 
 <template>
-  <div class="wbsx">
+  <div class="wbsx" :class="{ 'chrome-collapsed': chromeHidden }">
     <!-- Topbar -->
     <header class="topbar">
       <div class="title-wrap">
@@ -277,8 +292,6 @@ function scrollToToday() {
       </div>
     </header>
 
-    <!-- 담당(툴바)+간트 = 상단 고정 영역 -->
-    <div class="wbs-pane">
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="tgroup">
@@ -308,7 +321,7 @@ function scrollToToday() {
     </div>
 
     <!-- Gantt -->
-    <div ref="ganttEl" class="gantt">
+    <div ref="ganttEl" class="gantt" @scroll="onScroll">
       <div class="ginner">
         <div class="gridbg" :style="{ width: trackWidth }">
           <div class="daylines" />
@@ -397,7 +410,6 @@ function scrollToToday() {
         </template>
       </div>
     </div>
-    </div>
 
     <!-- tooltip -->
     <div v-if="tip" class="tip" :style="tipPos">
@@ -461,16 +473,16 @@ function scrollToToday() {
   --col-name: 300px; --col-who: 84px; --col-s: 50px; --col-e: 50px; --col-done: 56px; --col-prog: 86px;
   --info-w: calc(var(--col-name) + var(--col-who) + var(--col-s) + var(--col-e) + var(--col-done) + var(--col-prog));
   --day-w: 26px; --row-h: 30px; --grp-h: 34px; --step-h: 38px; --fs: 12.5px; --radius: 5px;
+  height: calc(100vh - 56px); display: flex; flex-direction: column;
   background: var(--bg); color: var(--ink); font-size: var(--fs); letter-spacing: -0.01em;
+  transition: height .24s ease;
 }
-/* GNB·전체일정(topbar)은 스크롤되어 사라지고, 이 영역(담당 툴바+간트)이 상단 고정 */
-.wbs-pane {
-  position: sticky; top: 0; height: 100vh;
-  display: flex; flex-direction: column;
-  background: var(--surface);
-}
+/* GNB가 함께 접히면 그 높이(56px)만큼 간트 영역을 넓힌다 */
+.wbsx.chrome-collapsed { height: 100vh; }
 .tnum { font-variant-numeric: tabular-nums; }
-.topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 14px 22px 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 14px 22px 12px; background: var(--surface); border-bottom: 1px solid var(--line); max-height: 160px; overflow: hidden; transition: max-height .24s ease, padding .24s ease, opacity .2s ease, border-color .24s ease; }
+/* 스크롤 내릴 때 전체 일정·KPI 영역을 접어 위로 올림(담당·날짜 헤더는 sticky 유지) */
+.wbsx.chrome-collapsed .topbar { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; border-bottom-color: transparent; }
 .title-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .topbar h1 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
 .sub { color: var(--ink-2); font-size: 12.5px; font-weight: 500; } .sub b { color: var(--ink); font-weight: 700; }
