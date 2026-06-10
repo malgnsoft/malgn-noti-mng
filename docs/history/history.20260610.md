@@ -88,11 +88,23 @@
 
 **발견**: ① WBS 진척률이 실제 코드보다 낮게 잡혀 있음(고객사 화면 "10%"였으나 사실상 완성 → 이번 주는 신규 구축이 아니라 **보강·결선·실데이터 미연동 식별** 위주). ② `#14 reset-password`는 6/4 인간 WIP가 아니라 api-dev 이번 세션 구현분(초기 귀속 오판을 팀원 보고로 정정·커밋).
 
+## 10. 사용자단 + API 프로덕션 배포 + WBS 진척 반영
+
+**배포**(스프린트 산출물 라이브 반영):
+- `malgn-noti`(사용자단) Pages — 인증 페이지(reset-password·reset-password/new·login/security) 배포(alias `6f535226`), 4개 라우트 200.
+- `malgn-noti-api` Workers — 크레딧 정산 결선·발송 취소/환불·비번 재설정 API + schema 정합 프로덕션 배포(Version `de6775c2`), `/health/db` 200·`/auth/reset-password` 400(정상 검증)·`/doc` 200. (admin은 §8 `03aa7735`로 이미 최신.)
+
+**WBS 반영**(D1 `wbs_item` 진행률 갱신 + 단계 진척 상향):
+- 항목 진행률: 발송 API 85→**100**, 고도화 API 35→**55**, 데이터 모델링 80→**95**, 관리자단 화면 개발 40→**55**, 관리자 회원/고객사(대시보드 10→**60**·고객사 목록 10→**85**·고객사 상세 10→**85**·회원·계정 관리 5→**70**), 사용자 보안인증 70→**90**·비밀번호 재설정 60→**90**·새 비밀번호 60→**90**.
+- 단계 진척: **Step 4 서비스 개발 55→60**(`wbsStageMeta` 코드 + 현황판 `stage` D1 동시) → 전체 가중평균 ≈ 47.8%. mng 배포(alias `958e67bf`).
+
 ---
 
 ## 산출물
 
-- `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`). 라이브 <https://malgn-noti-mng.pages.dev>.
+- `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`)·WBS 진척 반영(`958e67bf`). 라이브 <https://malgn-noti-mng.pages.dev>.
+- `malgn-noti`(사용자단) Pages 배포 — 인증 페이지(alias `6f535226`). 라이브 <https://malgn-noti.pages.dev>.
+- `malgn-noti-api` Workers 배포 — 크레딧 정산·취소/환불·비번 재설정(Version `de6775c2`). <https://malgn-noti-api.malgnsoft.workers.dev>.
 - `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`) · 화면 보강+위험액션 사유+스크롤락+ops 타입 정합(`03aa7735`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
 - 신규 컴포넌트 `app/components/AppPricingDialog.vue`(단가 모달, 목록·상세 공용).
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.

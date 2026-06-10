@@ -29,7 +29,7 @@ export const wbsStageMeta: Record<number, { weight: number, progress: number }> 
   1: { weight: 10, progress: 55 },
   2: { weight: 15, progress: 55 },
   3: { weight: 20, progress: 35 },
-  4: { weight: 45, progress: 55 },
+  4: { weight: 45, progress: 60 },
   5: { weight: 10, progress: 0 },
 }
 
