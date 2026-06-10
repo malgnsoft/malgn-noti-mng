@@ -29,7 +29,7 @@ const contentPath = computed(() => {
 })
 
 const { data: doc } = await useAsyncData(
-  () => 'doc:' + contentPath.value,
+  'doc:' + contentPath.value,
   () => queryCollection('docs').path(contentPath.value).first(),
   { watch: [contentPath] }
 )
