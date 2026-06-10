@@ -1,6 +1,6 @@
 # 2026-06-10 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가·배포.
+> **한 줄 요약**: `malgn-noti-mng` WBS 전체 화면 스크롤 동작을 solsol 방식(GNB·상단 접힘)으로 교체 + 스텝별 비중 표시·기준일 클릭 오늘 점프 + 블루프린트 현행화·스타터 zip 재패키징 + `/docs/board` 빈 본문 버그 수정. `malgn-noti-admin` 고객사 상세에 **발신정보 6테이블 섹션**(Figma `Deatail.png` 매칭) 추가 + **고객사 그룹(주소록) 페이지** 개발(스텁→목록·모달 2종)·배포.
 
 ---
 
@@ -34,12 +34,22 @@
 **코드** (`malgn-noti-admin` `app/pages/customers/[id].vue`): 계약 섹션 아래 **6개 테이블**(발신번호·브랜드RCS·도메인·PUSH 인증서·알림톡 발신 프로필·080 수신거부) 추가. 상태 배지는 `정보.png` 범례 반영(신청/심사중/승인/반려/취소·완료/실패·정상/사용불가·개통완료/신청중/해지 등), 각 카드 우측 "~ 관리" 버튼 + "발신정보" 그룹 헤딩.
 **데이터**: 상세 API(`opsFetch` → `malgn-noti-api`) 응답에 `senderInfo` 미포함 → 백엔드 연동 전까지 데모 데이터, 추후 `data.senderInfo.*`로 교체(주석). typecheck 통과(기존 `server/utils/ops.ts` 제네릭 오류는 무관).
 
+## 6. admin — 고객사 그룹(주소록) 페이지 개발 (LNB `회원/고객사 > 고객사 그룹(주소록)`)
+
+**배경**: 캔버스에서 해당 프레임 정독 — 고객사 그룹(주소록) 목록 + 그룹 수정 모달 + 그룹 연락처 모달.
+
+**코드** (`malgn-noti-admin` `app/pages/customers/groups.vue`): `AppComingSoon` 스텁 → 풀 페이지.
+- 목록: NO·고객사ID·구분·고객사명·그룹명·그룹ID·연락처 수·등록일·수정일·상태 + 체크박스. 필터(구분 세그먼트·고객사명 select·그룹명 검색). 액션 엑셀 다운로드·신규 등록·그룹 삭제.
+- **그룹 등록/수정 모달**: 고객사(select)·그룹명, 수정 시 삭제 버튼.
+- **그룹 연락처 모달**: 검색 + 테이블(수신사·수신자ID·휴대폰·이메일·토큰) + 연락처 추가·삭제·엑셀.
+- API 미연동 → 데모 데이터로 필터·페이징·CRUD·CSV를 클라이언트에서 동작. typecheck 통과(`@toggle` 시그니처를 `string | number`로 정정).
+
 ---
 
 ## 산출물
 
 - `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`). 라이브 <https://malgn-noti-mng.pages.dev>.
-- `malgn-noti-admin` Pages 배포 — 고객사 상세 발신정보 섹션(alias `4520c8ab`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
+- `malgn-noti-admin` Pages 배포 — 고객사 상세 발신정보 섹션(alias `4520c8ab`) + 고객사 그룹(주소록) 페이지(alias `e11d362f`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
 - `docs/PROJECT_MANAGEMENT_BLUEPRINT.md` 현행화, `project-mng-starter.zip` 재생성.
 
 ## 다음 단계 · 한계
