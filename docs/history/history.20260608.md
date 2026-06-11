@@ -1,4 +1,6 @@
-# 2026-06-08 — 관리자단 LNB AI 배너 닫기/하루 비노출 + 전체 메뉴 사양(13그룹/55항목) 반영
+# 2026-06-08 — 관리자단 LNB AI 배너 닫기/하루 비노출 + 전체 메뉴 사양(13그룹/55항목) 반영 + 고객사 필터 일렬형
+
+> ⚠️ 날짜 주의: 본 파일은 샌드박스 VM 시계(6/8) 기준으로 작성됨. 프로젝트 기준 실제 작업일은 **2026-06-11**(같은 날 `history.20260611.md` §1–10은 병렬 트랙). 추후 정리 시 통합 검토.
 
 **한 줄 요약**: `malgn-noti-admin` 좌측 사이드바(`AppLnb`) — ① "AI 발송 도우미 베타" 배너에 닫기(X) 버튼 + 닫으면 "하루 동안 다시 표시되지 않습니다" 토스트 + `localStorage` 만료 시각(24h) 비노출. ② 핸드오프(10그룹/17라우트) 기준이던 메뉴 트리를 **전체 메뉴 사양(13그룹/약 55항목)**으로 교체 — 수신거부·콘텐츠/사이트·API 그룹 신설 + 발송 모니터링·템플릿·결제·통계 등 leaf→다항목 확장. 둘 다 Cloudflare Pages 프로덕션 재배포.
 
@@ -40,12 +42,19 @@
 - 수정: 현재 경로에 매칭되는 메뉴 경로 중 **가장 긴(가장 구체적인) 하나만 활성**으로 처리하는 `activePath` computed 도입(`allPaths`에서 최장 매칭 탐색). 고객사 상세(`/customers/1`) 같은 detail 라우트는 부모 "고객사"만 활성으로 유지.
 - 라이브 검증: `/monitoring`·`/monitoring/blocked`·`/customers`·`/customers/1`·`/` 모두 활성 메뉴 정확히 1개. Pages alias `a3facf3a`.
 
-## 6. 산출물
+## 6. 고객사 관리 필터 영역 일렬형 스타일 (malgn-noti-admin)
 
-- `malgn-noti-admin` 커밋 4건 + `main` 푸시 — §1 AI 배너(`AppLnb.vue`), §3 전체 메뉴(`AppLnb.vue`), §4 스텁 42 + `AppComingSoon.vue`, §5 중복 활성화 수정(`AppLnb.vue`).
-- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584`, 준비 중 스텁 `9b2de4ec`, 중복 활성화 수정 `a3facf3a` (`*.malgn-noti-admin.pages.dev`).
+- `/customers` 상단 필터를 사용자 제공 참조 이미지대로 **일렬형(라벨 위 + 가로 한 줄)**으로 변경.
+- 공용 `AppFilterBar`는 43p 의존 동결 계약 — props/slot 개명 없이 **옵트인 `inline` prop** 추가(기본 false = 기존 2단 그리드 유지, 비파괴). inline 시 각 필드 라벨을 입력 위로, `flex flex-wrap items-end` 한 줄 배치 + 액션 버튼 줄 끝.
+- customers 페이지: `inline` 적용 + 구분/상태를 `AppSegmented` → `USelectMenu` 드롭다운 전환(단일행에 맞춤, 참조 이미지의 `선택 v` 형태), 가입일 date 2개·검색어 폭 고정.
+- 라이브 검증: `/customers` 200 + inline 마커 렌더. Pages alias `79355d31`.
 
-## 7. 다음 단계 / 알려진 한계
+## 7. 산출물
+
+- `malgn-noti-admin` 커밋 5건 + `main` 푸시 — §1 AI 배너·§3 전체 메뉴·§5 중복 활성화 수정(`AppLnb.vue`), §4 스텁 42 + `AppComingSoon.vue`, §6 일렬형 필터(`AppFilterBar.vue` + `customers/index.vue`).
+- Cloudflare Pages alias: AI 배너 `69c788bd`, 전체 메뉴 `1b6e0584`, 준비 중 스텁 `9b2de4ec`, 중복 활성화 수정 `a3facf3a`, 일렬형 필터 `79355d31` (`*.malgn-noti-admin.pages.dev`).
+
+## 8. 다음 단계 / 알려진 한계
 
 - 42개 라우트는 '준비 중' 스텁 — 도메인별 실제 화면(목록/폼/연동)은 별도 구현 필요.
 - 대시보드 그룹화 여부, API `/developers/*` 경로 확정은 페이지 본격 구현 시 재검토.
