@@ -1,6 +1,6 @@
 # 2026-06-11 작업 이력
 
-> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포. **(§9)** 발신정보 검수 확장(이메일 도메인·카카오 프로필 심사) + **사용자단 발신번호 관리 목업→실연동 버그픽스** + **관리자 Figma 전수 감사**·보강(operators 마스킹/보기·일괄·CSV / roles 도메인×액션 매트릭스·인원모달 / faq·notices·inquiries 필드 + 마이그레이션 0012~0015). QA GREEN, 배포 완료. **(§10)** 로그인 이력 마스킹/보기·검색 보강 + **고객사(customers) Figma 정본(`figma_noti_user`) 풀빌드** — Phase 1(기본정보 편집·크레딧·발신정보 실연동) + **Phase 2 순차(2a 담당자·2b 계약관리·2c 발송통계·2d 결제·2e 등록 풀페이지)**, 전부 무스키마(기존 테이블/사전집계 재사용). 단가·담보·후불·PG 액션은 모델 부재로 별도 에픽 분리. 단계별 QA GREEN, 7회 커밋·배포.
+> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포. **(§9)** 발신정보 검수 확장(이메일 도메인·카카오 프로필 심사) + **사용자단 발신번호 관리 목업→실연동 버그픽스** + **관리자 Figma 전수 감사**·보강(operators 마스킹/보기·일괄·CSV / roles 도메인×액션 매트릭스·인원모달 / faq·notices·inquiries 필드 + 마이그레이션 0012~0015). QA GREEN, 배포 완료. **(§10)** 로그인 이력 마스킹/보기·검색 보강 + **고객사(customers) Figma 정본(`figma_noti_user`) 풀빌드** — Phase 1(기본정보 편집·크레딧·발신정보 실연동) + **Phase 2 순차(2a 담당자·2b 계약관리·2c 발송통계·2d 결제·2e 등록 풀페이지)**, 전부 무스키마(기존 테이블/사전집계 재사용). 단가·담보·후불·PG 액션은 모델 부재로 별도 에픽 분리. 단계별 QA GREEN, 7회 커밋·배포. **(§11 admin-dev)** 관리자단 LNB — AI 배너 닫기/하루 비노출 + **전체 메뉴 사양(13그룹/55항목)** 교체(수신거부·콘텐츠·API 독립 그룹 신설) + 신규 42라우트 '준비 중' 스텁(`AppComingSoon`) + LNB 중복 활성화 버그픽스(최장 경로 매칭) + 고객사 필터 일렬형(`AppFilterBar` 옵트인 `inline`). `malgn-noti-admin` 5커밋·5배포.
 
 ---
 
@@ -95,7 +95,21 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 
 ---
 
+## 11. 관리자단 LNB — AI 배너·전체 메뉴 사양·준비중 스텁·중복활성화 버그픽스·필터 일렬형 (admin-dev)
+
+> (`history.20260608.md`에 선기록한 분 통합 — 샌드박스 VM 시계가 6/8로 잡혀 별도 파일에 작성됐던 것을 오늘 파일로 이전.)
+
+- **AI 발송 도우미 배너 닫기/하루 비노출** — `AppLnb.vue` 좌측 사이드바 배너에 닫기(X) + "하루 동안 다시 표시되지 않습니다" 토스트 + `localStorage`(`aiBannerDismissedUntil`) 만료 시각(24h) 저장·`onMounted` 만료 비교 재노출. (alias `69c788bd`.)
+- **전체 메뉴 사양 반영** — 핸드오프 10그룹/17라우트 → **전체 사양 13그룹/약 55항목**으로 교체. 신규 그룹 3종(수신거부·콘텐츠/사이트·API 독립) + 발송 모니터링·템플릿·결제·통계 등 leaf→다항목 확장. 기존 17페이지 재사용, 신규 ~38라우트 경로만. API는 Nuxt/Cloudflare `/api` 서버 예약 충돌 회피 위해 `/developers/*`. (alias `1b6e0584`.)
+- **신규 42개 라우트 '준비 중' 스텁** — 공용 `AppComingSoon.vue`(AppPageHeader dev=screen + AppEmptyState) + 42 스텁 페이지로 종전 404 전부 200화. (alias `9b2de4ec`.)
+- **LNB 중복 활성화 버그픽스** — `isActive`의 `startsWith` 접두사 매칭으로 하위 라우트(`/monitoring/blocked`)에서 부모(통합 발송 `/monitoring`)까지 동시 선택되던 문제를 **최장 경로 매칭**(`activePath` computed)으로 해결 → 항상 1개만 활성. (alias `a3facf3a`.)
+- **고객사 관리 필터 일렬형** — 참조 이미지대로 `/customers` 필터를 라벨 위+가로 한 줄로. 43p 의존 동결 계약(`AppFilterBar`)을 지켜 props/slot 개명 없이 **옵트인 `inline` prop**(기본 false 비파괴) 추가, customers는 구분/상태 세그먼트→`USelectMenu` 드롭다운으로 단일행화. (alias `79355d31`.)
+
+---
+
 ## 산출물
+
+- **§11 관리자단 LNB·필터(admin-dev)** — `malgn-noti-admin` 커밋 5건 → Pages alias: 배너 `69c788bd`·메뉴 `1b6e0584`·스텁 `9b2de4ec`·활성화수정 `a3facf3a`·필터 `79355d31` (`*.malgn-noti-admin.pages.dev`). `AppLnb.vue`·`AppFilterBar.vue`·`AppComingSoon.vue`(신규)·`customers/index.vue` + 스텁 42.
 
 - `malgn-noti`(사용자단) — 계정 6페이지 실 API 연동 커밋 `6e27329` → Pages 배포 alias `87da3ace`. 8개 패널 수정 + `AppBillingPanel` 신규 + `inquiries/[id].vue` 신규 + `detail.vue` 제거 + `sitemap.vue`. 라이브 <https://malgn-noti.pages.dev>.
 - `malgn-noti-api`(백엔드) — 2FA 토글·멤버 관리·영수증 API 커밋 `e076622` → Workers Version `2b7f9fcf`(`/me/security`·`/me/members`·`/credit-ledger/:id/receipt` 401 게이트·`/health` 200 라이브 검증). <https://malgn-noti-api.malgnsoft.workers.dev>.
