@@ -1,6 +1,6 @@
 # 2026-06-11 작업 이력
 
-> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포. **(§9)** 발신정보 검수 확장(이메일 도메인·카카오 프로필 심사) + **사용자단 발신번호 관리 목업→실연동 버그픽스** + **관리자 Figma 전수 감사**·보강(operators 마스킹/보기·일괄·CSV / roles 도메인×액션 매트릭스·인원모달 / faq·notices·inquiries 필드 + 마이그레이션 0012~0015). QA GREEN, 배포 완료.
+> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포. **(§9)** 발신정보 검수 확장(이메일 도메인·카카오 프로필 심사) + **사용자단 발신번호 관리 목업→실연동 버그픽스** + **관리자 Figma 전수 감사**·보강(operators 마스킹/보기·일괄·CSV / roles 도메인×액션 매트릭스·인원모달 / faq·notices·inquiries 필드 + 마이그레이션 0012~0015). QA GREEN, 배포 완료. **(§10)** 로그인 이력 마스킹/보기·검색 보강 + **고객사(customers) Figma 정본(`figma_noti_user`) 풀빌드** — Phase 1(기본정보 편집·크레딧·발신정보 실연동) + **Phase 2 순차(2a 담당자·2b 계약관리·2c 발송통계·2d 결제·2e 등록 풀페이지)**, 전부 무스키마(기존 테이블/사전집계 재사용). 단가·담보·후불·PG 액션은 모델 부재로 별도 에픽 분리. 단계별 QA GREEN, 7회 커밋·배포.
 
 ---
 
@@ -78,6 +78,23 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 
 ---
 
+## 10. 로그인 이력 보강 + 고객사(customers) Figma 정본 풀빌드(Phase 1·2)
+
+- **Figma 정본 갱신** — `figma_noti2`(admin 갱신본, 회원 로그인 이력 전용 프레임 없음 확인), 이어 **`figma_noti_user`**(고객사 상세 시안 14프레임=목록·등록·상세 전 탭)를 customers 정본으로 채택.
+- **로그인 이력 보강** — `/accounts/login-history`가 다른 페이지와 달리 평문이라 — `GET /ops/login-history` loginid 마스킹 + q/ip 검색 + `POST /ops/login-history/reveal`(페이지 토글·사유·감사로그) + 상세 드로어. (api `e6257857`, admin `bcacbe07`.)
+- **customers 전수 감사(admin-dev)** — 14프레임 대조: 목록·헤더 KPI·탭 구조·발신정보 Type1 ✅ 일치, 상세 탭 다수가 데모+기능 축소. 단가·담보·결제·통계·전자계약 등은 백엔드 모델 부재.
+- **Phase 1** — 기본정보 탭 **편집화**(PATCH /ops/companies 프로필 확장·광고수신·삭제 status:-1) + 크레딧 탭 **실연동**(GET /ops/companies/:id/credit-ledger 구분필터·요약) + 발신정보 탭 **실연동**(GET /ops/companies/:id/sender-info 6종, 민감값 제외). (api `467eab0d`, admin `cda6e6f2`.)
+- **Phase 2(2a~2e, 순차)**:
+  - **2a 담당자** — 대표계정 편집폼(이름·휴대전화·상태·비번재설정·**로그인ID 마스킹/reveal**·휴면=accountState 파생) + 결제이메일·회사전화. (api `50d1eba4`, admin `081d3da9`.)
+  - **2b 계약관리** — 진행 stepper(작성중/체결완료/만료, '요청'은 백엔드 미추적 비활성) + 전자계약 내역 + 가입서류 목록·**PDF 다운로드**(R2 스트림). (api `27aa7185`, admin `20b221f0`.)
+  - **2c 발송통계** — `GET /ops/companies/:id/dispatch-stats`(사전집계 TB_DISPATCH_STAT_DAILY 재사용, total/day/weekday) + 다중지표 차트·7지표 테이블. **실발송=발송−발송실패**(DB not_sent=미발송 혼동 정정). (api `99723e87`, admin `7f498c1d`.)
+  - **2d 결제** — credit-ledger 재사용(선불=charge·환불=refund,cancel 다중값) + charge 결제수단 부가 + 영수증 JSON 모달. 후불·결제취소/입금취소/환불신청은 **PG 미선정**으로 비활성. (api `2f8b439f`, admin `aa21d418`.)
+  - **2e 등록 풀페이지** — 단일 모달 → `customers/new.vue` 3탭(기본정보 유형별·담당자·간이 계약). 단가·담보·납부방법·세금계산서담당자는 모델 부재로 "추후" 비활성. (api `9c920670`, admin `19d2ed11`.)
+- **별도 에픽(미구현)** — 단가 설정(TB_PRICING 등 통신사·구간·채널 단가표 모델), 담보·최저월사용료, 후불 청구(invoice), 발송통계 시간별(hour, item-level 집계), 우편번호 검색 위젯, 전자계약 서명요청('요청' 단계). 대부분 PG/요금정책 확정 + 모델 설계 선행.
+- 각 단계 QA(haiku) 회귀 게이트 + FE↔Nitro↔BE 체인 cross-check GREEN. 2c에서 QA가 typecheck 3건(리팩터 직전 스냅샷) 포착→해소 확인.
+
+---
+
 ## 산출물
 
 - `malgn-noti`(사용자단) — 계정 6페이지 실 API 연동 커밋 `6e27329` → Pages 배포 alias `87da3ace`. 8개 패널 수정 + `AppBillingPanel` 신규 + `inquiries/[id].vue` 신규 + `detail.vue` 제거 + `sitemap.vue`. 라이브 <https://malgn-noti.pages.dev>.
@@ -87,6 +104,7 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - **§7 후속 라운드** — `malgn-noti`(문의 작성 버그픽스 + `/charge` 충전) 커밋 `41b1fa5` → Pages `71b85e64`. `malgn-noti-api`(`POST /me/charge` mock + `/ops/sender-phones` 심사) 커밋 `faf40c4` → Workers `34da178d`(`/me/charge` 401·`/ops/sender-phones` 403 라이브). `malgn-noti-admin`(발신번호 심사 페이지 + 프록시 2종) 커밋 `c8b9d64` → Pages `fdf96728`(200). 3레포 origin/main push + 프로덕션 배포(api→admin→frontend).
 - **§8 보안·온보딩·마이그레이션·관리자 배치** — 보안 422(noti `95cb158`·api `52ffad2` → `45d266da`·`95360a59`). 온보딩(noti `9722dd8`·api `f5e8990`·mng `80d3b19`). **마이그레이션 `0007`~`0011` Aurora 적용**(`db.malgn.co.kr` 직접 mysql, MEDIUMTEXT 수정). Wave1+2 백엔드 api `076b5e9` → Workers `081a27dd`(+schema mediumtext 정합). Wave1 admin `30bec99` → Pages `ee2a120c` · noti 온보딩 → Pages `e97a1c4f`. Wave2 admin `bc2bb7a` → Pages `adaf06cc`. QA Wave1·2 GREEN.
 - **§9 발신정보 검수 확장·발신번호 버그픽스·Figma 감사 보강** — senders 도메인/프로필 심사 api `7637f14`→`41f49658`·admin `0621966`→`e098e23e`. 사용자단 발신번호 실연동 noti `2a38468`→`da097b4d`. Figma Phase A·B api `f16d188`→`c823730f`·admin `15e3069`→`2da97612` + **마이그레이션 `0012`~`0015` Aurora 적용**(direct mysql). QA 전부 GREEN.
+- **§10 로그인 이력 + customers Figma 풀빌드** — 무스키마(기존 테이블 재사용). 로그인이력 api `e6257857`·admin `bcacbe07`. customers Phase1 api `467eab0d`·admin `cda6e6f2`. Phase2: 2a api `50d1eba4`/admin `081d3da9` · 2b api `27aa7185`/admin `20b221f0` · 2c api `99723e87`/admin `7f498c1d` · 2d api `2f8b439f`/admin `aa21d418` · 2e api `9c920670`/admin `19d2ed11`. 커밋: api `f83cf40`~`34c40df`, admin `0e913e9`~`987ef54`. 단계별 QA GREEN.
 
 ## 다음 단계 · 한계 (저순위 후속)
 
@@ -94,3 +112,4 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - billing 패널 영수증을 `/credit-ledger/:id/receipt` 실연동으로 보강(현재 행 기반 fallback).
 - 세금계산서(TB_TAX_INVOICE)·PG 빌링키 카드 등록(PG 선정 후)·매니저 초대메일 방식(현재 즉시생성).
 - publisher 표준화 4건(컴포넌트 중복 정리)·라이브 2FA/멤버 스모크(Aurora 환경).
+- **customers 별도 에픽(§10 미구현)** — 단가 설정 모델(TB_PRICING: 통신사 SKT/KT/LGU+·표준/맞춤·구간·채널별 단가표), 담보·최저월사용료·납부방법(선불/후불)·발송용도·MasterID·세금계산서담당자(계약 확장 컬럼), 후불 청구(invoice 모델), 발송통계 시간별(hour, TB_DISPATCH_ITEM HOUR 집계), 우편번호 검색 위젯(다음 postcode), 전자계약 서명요청 '요청' 단계(contract_state 'requested'). 대부분 PG/요금정책 확정 + 모델 설계 선행.
