@@ -104,6 +104,7 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - **신규 42개 라우트 '준비 중' 스텁** — 공용 `AppComingSoon.vue`(AppPageHeader dev=screen + AppEmptyState) + 42 스텁 페이지로 종전 404 전부 200화. (alias `9b2de4ec`.)
 - **LNB 중복 활성화 버그픽스** — `isActive`의 `startsWith` 접두사 매칭으로 하위 라우트(`/monitoring/blocked`)에서 부모(통합 발송 `/monitoring`)까지 동시 선택되던 문제를 **최장 경로 매칭**(`activePath` computed)으로 해결 → 항상 1개만 활성. (alias `a3facf3a`.)
 - **고객사 관리 필터 일렬형** — 참조 이미지대로 `/customers` 필터를 라벨 위+가로 한 줄로. 43p 의존 동결 계약(`AppFilterBar`)을 지켜 props/slot 개명 없이 **옵트인 `inline` prop**(기본 false 비파괴) 추가, customers는 구분/상태 세그먼트→`USelectMenu` 드롭다운으로 단일행화. (alias `79355d31`.)
+- **고객사 목록 카드 '선택 N건' 인라인 배치** — 선택 시 '전체 N건' 아래에 쌓이던 '선택 N건'을 **'전체 N건' 오른쪽 같은 줄**로. `AppSectionCard`에 추가형 `#title-aside` 슬롯(미사용 시 동작 동일) + customers는 subtitle 제거 → 슬롯에 `UBadge`(primary). (alias `d4d0bbb9`.)
 
 ---
 
