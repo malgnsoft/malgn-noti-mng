@@ -1,6 +1,6 @@
 # 2026-06-11 작업 이력
 
-> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`).
+> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인.
 
 ---
 
@@ -44,12 +44,24 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 
 ---
 
+## 7. 후속 라운드 — 충전·발신번호 심사·문의 작성 버그픽스 + admin-dev 합류
+
+같은 팀에 **admin-dev(opus, 7번째 역)** 합류. 추가 작업 3건을 병렬 처리 후 3레포 커밋·푸시·배포.
+
+- **문의 작성 저장 버그픽스**(사용자 보고) — `/account/inquiry`의 `onSubmit`이 `router.push`만 하고 **`POST /inquiries`를 호출하지 않아** 등록이 저장되지 않던 버그. async POST(`inquiryType/productType?/title/body`) + 중복 제출 guard로 수정. 목록·상세는 정상이었고 작성 페이지만 목업으로 남아있던 케이스(git/코드 대조로 보고≠실제 두 번 확인 후 적용).
+- **크레딧 충전 `/charge`**(frontend-dev) — 금액 프리셋·직접입력 + 결제수단(`/payment-methods`) + `POST /me/charge`(Idempotency-Key 이중충전 차단) + `/charge/result` 결과·영수증. 백엔드(api-dev) `POST /me/charge` mock 결제(트랜잭션 잔액 적립·감사로그, 스키마 무변경). PG 빌링키는 mock 스텁(후속).
+- **관리자 발신번호 심사 `/senders/numbers`**(admin-dev) — 백엔드(api-dev) `GET /ops/sender-phones`·`PATCH /:id`(승인/반려·사유·감사로그, accounts 패턴, 실 스키마 한글 enum `대기/심사중/승인/반려`). admin Nitro 프록시 2종 + `types/senderPhone` + 드로어 심사 UX. 공용 컴포넌트 동결계약 준수(개명 없음, `AppStatusBadge` '심사중' 톤 1줄 additive).
+- **검수(planner)** — "나의 페이지" 좌측 부메뉴 전수 점검: settings·cards·password·security·multi·contract·credit·billing·inquiries(목록/상세)·문의작성·충전 **전부 ✅ 실 API 연동** 확인(코드 기준). 한계 2: billing은 charge 원장 한정, PG 빌링키 mock.
+
+---
+
 ## 산출물
 
 - `malgn-noti`(사용자단) — 계정 6페이지 실 API 연동 커밋 `6e27329` → Pages 배포 alias `87da3ace`. 8개 패널 수정 + `AppBillingPanel` 신규 + `inquiries/[id].vue` 신규 + `detail.vue` 제거 + `sitemap.vue`. 라이브 <https://malgn-noti.pages.dev>.
 - `malgn-noti-api`(백엔드) — 2FA 토글·멤버 관리·영수증 API 커밋 `e076622` → Workers Version `2b7f9fcf`(`/me/security`·`/me/members`·`/credit-ledger/:id/receipt` 401 게이트·`/health` 200 라이브 검증). <https://malgn-noti-api.malgnsoft.workers.dev>.
 - `malgn-noti-mng` — 기획 정본 6종(`docs/pages/`) + 본 작업 이력.
 - 무관 파일(`malgn-noti/docs/WBS.md`, `malgn-noti-api`의 `0006_company_ad_receive_at.sql`)은 범위 제외.
+- **§7 후속 라운드** — `malgn-noti`(문의 작성 버그픽스 + `/charge` 충전) 커밋 `41b1fa5` → Pages `71b85e64`. `malgn-noti-api`(`POST /me/charge` mock + `/ops/sender-phones` 심사) 커밋 `faf40c4` → Workers `34da178d`(`/me/charge` 401·`/ops/sender-phones` 403 라이브). `malgn-noti-admin`(발신번호 심사 페이지 + 프록시 2종) 커밋 `c8b9d64` → Pages `fdf96728`(200). 3레포 origin/main push + 프로덕션 배포(api→admin→frontend).
 
 ## 다음 단계 · 한계 (저순위 후속)
 
