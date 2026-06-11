@@ -1,6 +1,6 @@
 # 2026-06-11 작업 이력
 
-> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포.
+> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포. **(§9)** 발신정보 검수 확장(이메일 도메인·카카오 프로필 심사) + **사용자단 발신번호 관리 목업→실연동 버그픽스** + **관리자 Figma 전수 감사**·보강(operators 마스킹/보기·일괄·CSV / roles 도메인×액션 매트릭스·인원모달 / faq·notices·inquiries 필드 + 마이그레이션 0012~0015). QA GREEN, 배포 완료.
 
 ---
 
@@ -68,6 +68,16 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 
 ---
 
+## 9. 발신정보 검수 확장 · 사용자단 발신번호 버그픽스 · Figma 전수 감사 보강(Phase A·B)
+
+- **발신정보 검수 확장(관리자)** — `/senders/domains`(이메일 도메인)·`/senders/profiles`(카카오 발신 프로필) 심사 신설. sender-phones 패턴 미러하되 **실 스키마 차이 반영**: 이메일은 approvalState 컬럼 부재로 `verified_yn`/`dkim_state`에서 승인/반려/대기 **파생**(반려사유 감사로그만), 카카오는 실 enum `정상`/`차단`/`대기`(승인/반려 아님, send_key 미노출). 무스키마. (api `7637f14`→Workers `41f49658`, admin `0621966`→Pages `e098e23e`.)
+- **🐛 사용자단 발신번호 관리 버그픽스** — `/sender/numbers`(malgn-noti)가 **완전 목업**(하드코딩 ref, 등록 시 로컬 push만, API 호출 0)이라 등록한 번호가 저장·노출 안 되던 문제. 테넌트 `/sender-phones`(GET 목록·POST 등록·DELETE) 실연동으로 교체 — 등록 시 실 DB 저장(`approvalState='대기'` 신청) → 사용자 목록 + 운영자 심사까지 end-to-end 연결. (noti `2a38468`→Pages `da097b4d`.)
+- **Figma 전수 감사(admin-dev)** — 이번 세션 관리자 페이지(accounts·senders·system·support)를 핸드오프 Figma(`/Users/dotype/ProjectHandoff/figma_noti`)와 대조. 심각도 '높음' 없음, 대부분 백엔드 필드 부재로 인한 컬럼 축소 또는 의도된 v1 보류.
+- **Phase A·B 보강** — ① operators: 컬럼(회원번호·가입일·소속그룹) + **PII 마스킹/가려진 정보 보기**(`POST /ops/operators/:id/reveal`, accounts 패턴) + 상태 일괄변경 + CSV. ② roles: **도메인×액션 권한 매트릭스**(카탈로그 `domain.action` 11키) + 그룹 인원 설정 모달 + 설명. ③ faq +작성자·상단노출, notices +분류·작성자·필터, inquiries +노출토글·답변작성자/일시(replies 도출). **마이그레이션 `0012`~`0015`**(faq author/pinned, notice category/author, inquiry visible_yn, operator_role description) 직접 mysql로 Aurora 적용. (api `f16d188`→Workers `c823730f`, admin `15e3069`→Pages `2da97612`.)
+- **보류(Phase C, 별도 인프라)** — operators 강제 로그아웃(운영자 JWT 로그인 선행), senders/numbers 서류 AI검증 패널(서류 업로드+AI 도메인 신설), 소속그룹관리 모달·리치에디터·일부 엑셀.
+
+---
+
 ## 산출물
 
 - `malgn-noti`(사용자단) — 계정 6페이지 실 API 연동 커밋 `6e27329` → Pages 배포 alias `87da3ace`. 8개 패널 수정 + `AppBillingPanel` 신규 + `inquiries/[id].vue` 신규 + `detail.vue` 제거 + `sitemap.vue`. 라이브 <https://malgn-noti.pages.dev>.
@@ -76,6 +86,7 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - 무관 파일(`malgn-noti/docs/WBS.md`, `malgn-noti-api`의 `0006_company_ad_receive_at.sql`)은 범위 제외.
 - **§7 후속 라운드** — `malgn-noti`(문의 작성 버그픽스 + `/charge` 충전) 커밋 `41b1fa5` → Pages `71b85e64`. `malgn-noti-api`(`POST /me/charge` mock + `/ops/sender-phones` 심사) 커밋 `faf40c4` → Workers `34da178d`(`/me/charge` 401·`/ops/sender-phones` 403 라이브). `malgn-noti-admin`(발신번호 심사 페이지 + 프록시 2종) 커밋 `c8b9d64` → Pages `fdf96728`(200). 3레포 origin/main push + 프로덕션 배포(api→admin→frontend).
 - **§8 보안·온보딩·마이그레이션·관리자 배치** — 보안 422(noti `95cb158`·api `52ffad2` → `45d266da`·`95360a59`). 온보딩(noti `9722dd8`·api `f5e8990`·mng `80d3b19`). **마이그레이션 `0007`~`0011` Aurora 적용**(`db.malgn.co.kr` 직접 mysql, MEDIUMTEXT 수정). Wave1+2 백엔드 api `076b5e9` → Workers `081a27dd`(+schema mediumtext 정합). Wave1 admin `30bec99` → Pages `ee2a120c` · noti 온보딩 → Pages `e97a1c4f`. Wave2 admin `bc2bb7a` → Pages `adaf06cc`. QA Wave1·2 GREEN.
+- **§9 발신정보 검수 확장·발신번호 버그픽스·Figma 감사 보강** — senders 도메인/프로필 심사 api `7637f14`→`41f49658`·admin `0621966`→`e098e23e`. 사용자단 발신번호 실연동 noti `2a38468`→`da097b4d`. Figma Phase A·B api `f16d188`→`c823730f`·admin `15e3069`→`2da97612` + **마이그레이션 `0012`~`0015` Aurora 적용**(direct mysql). QA 전부 GREEN.
 
 ## 다음 단계 · 한계 (저순위 후속)
 
