@@ -1,6 +1,6 @@
 # 2026-06-11 작업 이력
 
-> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인.
+> **한 줄 요약**: **3차 멀티에이전트팀(`account-pages-dev`, 6역 tmux 분할)** 로 계정 6페이지(cards·security·multi·credit·inquiries·billing)를 **데모 → 실 API 풀스택 연동**. 백엔드 3엔드포인트 신설(2FA 토글·멤버 관리·영수증, 무스키마), 기획 정본 6종 작성, QA 회귀 게이트 GREEN. 2레포 커밋·푸시 + 프로덕션 배포(api `2b7f9fcf`·frontend `87da3ace`). **(§7 후속)** admin-dev 합류(7역) + 크레딧 충전(`/charge`)·관리자 발신번호 심사(`/senders/numbers`)·**문의 작성 저장 버그픽스**(사용자 보고: `onSubmit`이 POST 미호출이라 미저장) — 3레포 커밋·배포(api `34da178d`·admin `fdf96728`·frontend `71b85e64`). "나의 페이지" 전 메뉴 ✅ 실연동 검수 확인. **(§8)** 보안 재인증 422 버그픽스 + **멤버 최초로그인 온보딩**(joinState·약관·비번변경) + **막혔던 DB 마이그레이션 5종 적용**(직접 mysql 직결로 진단·해결, MEDIUMTEXT 행크기 수정) + 관리자 **Wave 1**(운영자 1:1문의·accounts PII 마스킹/보기) + **Wave 2**(운영자 계정·권한그룹·FAQ·공지, Figma 기반, 신규 테이블 4종). QA GREEN, 전부 커밋·배포.
 
 ---
 
@@ -55,6 +55,19 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 
 ---
 
+## 8. 보안 재인증·멤버 온보딩·DB 마이그레이션 해결·관리자 배치(Wave 1·2)
+
+같은 7역 팀으로 사용자 보고 버그·신규 도메인을 연속 처리. 핵심은 **막혀 있던 DB 마이그레이션 적용 경로를 뚫은 것.**
+
+- **보안 재인증 버그픽스** — `/account/security` 등에서 비번 틀리면 로그인으로 튕기던 문제. 재인증 비번 오류를 `errors.unauthenticated`(401, 전역 핸들러가 자동 로그아웃) → **`errors.unprocessable`(422)**로 분리(`/me/security·/me/password·/me/email-change·/me/withdraw` 4곳). FE catch 422 인식·모달 유지. (noti `95cb158`·api `52ffad2` → Pages `45d266da`·Workers `95360a59`.)
+- **멤버 최초 로그인 온보딩** — owner가 `/me/members`로 추가한 멤버는 `joinState='invited'`(임시비번). 최초 로그인 시 미들웨어 게이트(`onboarding.global.ts`)가 `/onboarding`로 강제 → [약관 동의·회원정보·비밀번호 변경] 단일 `POST /me/onboarding` → `joinState='joined'`(가입완료). 약관은 v1 최소(`user.terms_agreed_at`). (noti `9722dd8`·api `f5e8990`·mng `80d3b19`.)
+- **🔓 DB 마이그레이션 블로커 해결** — 대기하던 5종(`0007`~`0011`)을 Aurora에 적용. **막혔던 경로 진단**: 배포 워커는 `/admin/migrate`를 `APP_ENV!=='local'`로 404 차단 / 로컬 `wrangler dev --remote`(4.94·4.99)는 Hyperdrive→Aurora 원격 브릿지 503 / `APP_ENV=local` 배포는 `auth.ts` X-Dev-* **인증 우회**라 불가. → **해결: 사용자 제공 직접 접속(`db.malgn.co.kr`, DB `noti`)으로 mysql CLI 직결**(동일 프로덕션 Aurora 8.0.42 확인). 적용 중 `0010/0011`의 `VARCHAR(16383)×utf8mb4` 행크기(65535) 초과 → **MEDIUMTEXT로 수정** 후 통과. 방법은 [[db-migration-apply-method]]에 기록.
+- **Wave 1 (관리자, 배포가능)** — 운영자 1:1 문의(`/ops/inquiries` 교차테넌트 조회·운영자 답변·answerState) + **accounts PII 마스킹/보기**: `/ops/accounts` 응답을 email·loginid·phone 마스킹 + `POST /ops/accounts/:id/reveal {reason}`(원본 + 감사로그). admin은 상세에서만 "가려진 정보 보기"(사유 모달→원본). (api `076b5e9` → Workers `081a27dd`, admin `30bec99` → Pages `ee2a120c`, noti onboarding → Pages `e97a1c4f`.)
+- **Wave 2 (관리자, Figma 12_시스템·9_고객지원)** — 운영자 계정(`/ops/operators` CRUD·임시비번·마지막 운영자 가드), 권한 그룹(`/ops/roles` + 권한 매트릭스 `/ops/permissions` 11키), FAQ(`/ops/faqs`), 공지(`/ops/notices`). 신규 테이블 `TB_OPERATOR·TB_OPERATOR_ROLE·TB_FAQ·TB_NOTICE`(마이그레이션 `0008`~`0011`). admin 28파일(페이지4+프록시19+타입5). (api 백엔드 `076b5e9`→`081a27dd`, admin 프론트 `bc2bb7a` → Pages `adaf06cc`.)
+- **QA** — Wave 1 사후 회귀 검증(noti/admin/api 게이트 + 체인) GREEN, Wave 2 4체인(operators/roles/faq/notices FE↔Nitro↔/ops) GREEN. roles.vue 타입 9건은 보고 시점 해소 확인.
+
+---
+
 ## 산출물
 
 - `malgn-noti`(사용자단) — 계정 6페이지 실 API 연동 커밋 `6e27329` → Pages 배포 alias `87da3ace`. 8개 패널 수정 + `AppBillingPanel` 신규 + `inquiries/[id].vue` 신규 + `detail.vue` 제거 + `sitemap.vue`. 라이브 <https://malgn-noti.pages.dev>.
@@ -62,6 +75,7 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - `malgn-noti-mng` — 기획 정본 6종(`docs/pages/`) + 본 작업 이력.
 - 무관 파일(`malgn-noti/docs/WBS.md`, `malgn-noti-api`의 `0006_company_ad_receive_at.sql`)은 범위 제외.
 - **§7 후속 라운드** — `malgn-noti`(문의 작성 버그픽스 + `/charge` 충전) 커밋 `41b1fa5` → Pages `71b85e64`. `malgn-noti-api`(`POST /me/charge` mock + `/ops/sender-phones` 심사) 커밋 `faf40c4` → Workers `34da178d`(`/me/charge` 401·`/ops/sender-phones` 403 라이브). `malgn-noti-admin`(발신번호 심사 페이지 + 프록시 2종) 커밋 `c8b9d64` → Pages `fdf96728`(200). 3레포 origin/main push + 프로덕션 배포(api→admin→frontend).
+- **§8 보안·온보딩·마이그레이션·관리자 배치** — 보안 422(noti `95cb158`·api `52ffad2` → `45d266da`·`95360a59`). 온보딩(noti `9722dd8`·api `f5e8990`·mng `80d3b19`). **마이그레이션 `0007`~`0011` Aurora 적용**(`db.malgn.co.kr` 직접 mysql, MEDIUMTEXT 수정). Wave1+2 백엔드 api `076b5e9` → Workers `081a27dd`(+schema mediumtext 정합). Wave1 admin `30bec99` → Pages `ee2a120c` · noti 온보딩 → Pages `e97a1c4f`. Wave2 admin `bc2bb7a` → Pages `adaf06cc`. QA Wave1·2 GREEN.
 
 ## 다음 단계 · 한계 (저순위 후속)
 
