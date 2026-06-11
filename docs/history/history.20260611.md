@@ -105,6 +105,7 @@ account 6페이지 전부 `useApi` 경유 실연동(전부 얇은 셸 + `App*Pan
 - **LNB 중복 활성화 버그픽스** — `isActive`의 `startsWith` 접두사 매칭으로 하위 라우트(`/monitoring/blocked`)에서 부모(통합 발송 `/monitoring`)까지 동시 선택되던 문제를 **최장 경로 매칭**(`activePath` computed)으로 해결 → 항상 1개만 활성. (alias `a3facf3a`.)
 - **고객사 관리 필터 일렬형** — 참조 이미지대로 `/customers` 필터를 라벨 위+가로 한 줄로. 43p 의존 동결 계약(`AppFilterBar`)을 지켜 props/slot 개명 없이 **옵트인 `inline` prop**(기본 false 비파괴) 추가, customers는 구분/상태 세그먼트→`USelectMenu` 드롭다운으로 단일행화. (alias `79355d31`.)
 - **고객사 목록 카드 '선택 N건' 인라인 배치** — 선택 시 '전체 N건' 아래에 쌓이던 '선택 N건'을 **'전체 N건' 오른쪽 같은 줄**로. `AppSectionCard`에 추가형 `#title-aside` 슬롯(미사용 시 동작 동일) + customers는 subtitle 제거 → 슬롯에 `UBadge`(primary). (alias `d4d0bbb9`.)
+- **전체 목록 페이지 상단 필터 일렬형 통일** — customers 스타일을 나머지 **13개 목록 페이지**(accounts·login-history·withdrawn·billing·customers/groups·senders 3종·support 3종·operators·templates)에 일괄 적용. 서브에이전트(general-purpose)에 정확한 변환 규칙 위임 후 빌드·배포 직접 수행: `AppFilterBar`에 `inline` 추가 + 필터 슬롯 `AppSegmented`→`USelectMenu` 드롭다운(옵션·v-model 동일, 고정폭) + 선택 카운트 subtitle→`#title-aside` UBadge(선택형 목록만). 공용 컴포넌트 미수정(기존 슬롯 재사용). 표본 6페이지 200 + 일렬형 렌더 검증. (alias `00e44485`.)
 
 ---
 
