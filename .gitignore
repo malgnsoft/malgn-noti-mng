@@ -29,8 +29,10 @@ logs
 node_modules
 .pnpm-store
 
-# Claude Code 로컬 설정
-.claude/
+# Claude Code 로컬 설정 (내용만 무시 — 디렉터리 자체는 두어 하위 예외 허용)
+.claude/*
+# 단, 에이전트팀 정의는 공용이므로 버전 관리에 포함
+!.claude/agents/
 
 # wrangler local state
 .wrangler
