@@ -1,6 +1,6 @@
 # 2026-06-12 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요.
+> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증.
 
 ---
 
@@ -77,3 +77,25 @@
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> — 게이트·문서 통합 적용. 마지막(렌더 복구) alias `a40cefb0`.
 - **검증**: 비로그인 게이트 302/401 GREEN, 로그인 후 페이지·문서 렌더 200 GREEN. 덤프 누수 차단은 **미해결(공개 200)** — 후속 D1 전환 필요.
 - **임시 데이터 정리**: D1 `member` 의 `zz_%` 검증회원 2건 삭제(0건 확인).
+
+---
+
+## 5. 이슈 게시판 도입 + 이슈 목록 테이블 정렬 fix 프로덕션 반영(재배포)
+
+**배경**: 관리앱에 정책·이슈·공지·논의를 올리는 **이슈 게시판**(`/issues` 목록·작성·상세·수정)을 추가하고(커밋 `21bc838`), 목록 테이블의 헤더(상태/작성자/작성일)와 본문 셀 어긋남을 `table-layout: fixed` + 컬럼 폭 확정으로 수정(커밋 `4205411`), 문서 변경 배포 시 D1 재시드 도구를 추가(커밋 `1c21522`)했으나, 이 커밋들의 배포 이력이 누락돼 있었음.
+
+**이슈(2026-06-12 후속 리포트)**: 라이브 <https://malgn-noti-mng.pages.dev/issues> 에서 목록이 여전히 깨져 보임 — 헤더는 우측까지 펼쳐지는데 본문 셀은 좌측에 몰림.
+
+**진단**: 정렬 fix(`app/pages/issues/index.vue` `.table { table-layout: fixed }` + `.c-type 84 / .c-status 84 / .c-author 120 / .c-date 140` 컬럼 폭)는 이미 커밋 `4205411`에 존재하고 working tree 도 clean. 즉 **소스는 정상이나 그 빌드가 프로덕션에 반영되지 않은 stale 배포**가 원인. 라이브는 로그인 게이트로 막혀 curl 로 CSS 직접 확인 불가 → 로컬 `pnpm build` 후 컴파일 CSS(`dist/_nuxt/index.Cc80tf4J.css`)에 `table-layout:fixed` 포함을 확인해 소스 정상성 검증.
+
+**배포/검증**(프로덕션 <https://malgn-noti-mng.pages.dev>, `--branch=main`, ASCII commit-message):
+- `npx wrangler@4 pages deploy dist --project-name=malgn-noti-mng --branch=main --commit-dirty=true --commit-message "fix: issue list table column alignment"` → 배포 alias `2463c918`.
+- 검증: 프로덕션에서 fix 포함 CSS `index.Cc80tf4J.css` 가 **HTTP 200 + `table-layout:fixed`** 로 서빙됨 확인. `/issues` 헤더·본문 컬럼 정렬 복구.
+
+**정합**: 소스 변경 없음(fix 는 `4205411` 에 기커밋, working tree clean) — 이번 작업의 변경분은 본 배포 이력 기록뿐. 라이브 산출물 = 기존 working tree 그대로.
+
+## 산출물 (§5)
+
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> — 이슈 목록 정렬 fix 반영. alias `2463c918`.
+- **검증**: 프로덕션 fix-CSS `index.Cc80tf4J.css` HTTP 200 + `table-layout:fixed` GREEN.
+- **관련 커밋(기존)**: `21bc838`(이슈 게시판)·`4205411`(정렬 fix)·`1c21522`(재시드 도구) — 본 §5 에서 배포·이력 정합.
