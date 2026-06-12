@@ -24,8 +24,27 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
       failOnError: false,
-      routes: []
+      routes: [],
+      // ⚠️ 문서 덤프 인증 게이트(Task #8): @nuxt/content 는 sql_dump 를 prerender:true 로
+      //   강제해 정적 파일로 떨궈 _routes.json exclude(워커 우회)에 올린다 → 비로그인 노출.
+      //   prerender 를 막으면 등록된 서버 핸들러가 런타임(워커)에서 서빙 → 아래 서버
+      //   미들웨어(server/middleware/auth.ts)가 세션 검사 가능. 콘텐츠는 깨지지 않음
+      //   (로그인 사용자의 내부 시드 fetch 는 쿠키가 전달돼 통과).
+      ignore: ['/__nuxt_content']
     }
+  },
+
+  // ⚠️ 문서 덤프 인증 게이트(Task #8) — 2경로 차단:
+  //  1) `/__nuxt_content/**`(런타임 핸들러가 서빙) → server/middleware/auth.ts 가 세션 401 로 가드.
+  //     내부 시드 fetch(event.$fetch)는 로그인 쿠키가 전달돼 통과하므로 /docs 가 안 깨진다.
+  //  2) `/dump.docs.sql`(루트 정적 사본 = 문서 전체 덤프) → 이 경로는 실제 디스크 파일이라
+  //     워커가 미들웨어 이전에 정적 에셋으로 단락 처리(isPublicAssetURL) → 미들웨어로 못 막는다.
+  //     따라서 _redirects(엣지)로 비로그인 노출을 차단한다. 콘텐츠 런타임은 D1(_content_docs)을
+  //     직접 조회하고, 덤프는 **체크섬 불일치 시에만**(문서 내용 변경 후) 시드용으로 읽으므로,
+  //     D1 이 시드돼 있는 정상 운영 중에는 이 경로가 호출되지 않아 차단해도 /docs 가 정상이다.
+  //     ⚠️ 단, docs/ 내용이 바뀐 배포에서는 원격 콘텐츠 D1 재시드가 선행돼야 한다(아래 §운영 메모).
+  routeRules: {
+    '/dump.docs.sql': { redirect: { to: '/login', statusCode: 302 } }
   },
 
   // 콘텐츠 소스(docs/) → content.config.ts 의 collections 에서 매핑.

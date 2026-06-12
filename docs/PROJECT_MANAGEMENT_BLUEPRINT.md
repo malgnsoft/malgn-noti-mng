@@ -127,9 +127,9 @@ docs/                          # 마크다운 문서 + history/
 
 ## 4. 메뉴 구성도 (IA)
 
-상단 GNB(고정 56px): `[로고]` + 네비 + (우측) GitHub 링크.
+상단 GNB(고정 56px): `[로고]` + 네비 + (우측) 사용자/로그아웃(비로그인 시 로그인).
 ```
-[로고 {PROJECT}]   대시보드 · 이슈 · WBS · 문서 · 작업 이력            GitHub↗
+[로고 {PROJECT}]   대시보드 · 이슈 · WBS · 문서 · 작업 이력            사용자 ▾ · 로그아웃
 ```
 - `default.vue`의 `nav` 배열로 정의: `{ to, label, icon }`. **순서: 대시보드 → 이슈 → WBS → 문서 → 작업 이력**.
   - 대시보드 `/` `i-lucide-layout-dashboard`

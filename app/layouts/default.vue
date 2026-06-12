@@ -20,16 +20,6 @@
           </NuxtLink>
         </nav>
         <div class="gnb-right">
-          <a
-            class="gnb-link gnb-repo"
-            href="https://github.com/malgnsoft/malgn-noti-mng"
-            target="_blank"
-            rel="noopener"
-          >
-            <UIcon name="i-lucide-github" class="gnb-link-ico" />
-            GitHub
-          </a>
-
           <ClientOnly>
             <div v-if="member" class="gnb-auth">
               <NuxtLink to="/account" class="gnb-user">
@@ -68,6 +58,7 @@ const gnbHidden = computed(() => isFullScreen.value && chromeHidden.value)
 
 const nav = [
   { to: '/', label: '대시보드', icon: 'i-lucide-layout-dashboard' },
+  { to: '/issues', label: '이슈', icon: 'i-lucide-message-square-warning' },
   { to: '/wbs', label: 'WBS', icon: 'i-lucide-gantt-chart' },
   { to: '/docs', label: '문서', icon: 'i-lucide-book-text' },
   { to: '/history', label: '작업 이력', icon: 'i-lucide-history' },
@@ -178,9 +169,6 @@ async function onLogout() {
 .gnb-link-ico {
   width: 16px;
   height: 16px;
-}
-.gnb-repo {
-  color: var(--ink-400);
 }
 .gnb-right {
   display: flex;

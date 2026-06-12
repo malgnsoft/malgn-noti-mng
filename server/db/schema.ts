@@ -69,3 +69,20 @@ export const wbsItem = sqliteTable('wbs_item', {
   href: text('href'),
   sort: integer('sort').notNull().default(0),
 })
+
+// 이슈 — 정책·이슈 게시판(§5.7). 작성자 = member
+//  - type:   policy | issue | notice | discussion (§7.2 a)
+//  - status: open | in_progress | resolved | hold  (공통 enum, §7.2 b)
+//  - authorId 는 member.id 앱 레벨 참조(FK 강제 미사용 — board/wbs 관례). authorName 은 작성 시점 스냅샷.
+export const issue = sqliteTable('issue', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  type: text('type').notNull().default('issue'),
+  title: text('title').notNull(),
+  body: text('body').notNull().default(''), // 마크다운 본문
+  status: text('status').notNull().default('open'),
+  priority: text('priority'), // (선택) low | normal | high — null 허용
+  authorId: integer('author_id').notNull(),
+  authorName: text('author_name').notNull().default(''),
+  createdAt: text('created_at').notNull(), // ISO8601
+  updatedAt: text('updated_at'), // ISO8601
+})
