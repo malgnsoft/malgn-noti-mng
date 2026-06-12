@@ -233,3 +233,18 @@
 - **이동**: `app/pages/issues/[id].vue` → `app/pages/issues/[id]/index.vue`(라우팅 충돌 해소).
 - **수정**: `app/utils/markdown.ts`(blockquote `&gt;` 매칭).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `d7805887`. 수정 페이지·인용문 GREEN.
+
+---
+
+## 11. 이슈 목록에서 본문 미리보기 제거
+
+**요청**: 목록 행에 제목 아래로 노출되던 본문 미리보기(`it.preview`) 삭제 — 이미지 첨부 시 마크다운 원문(`![스크린샷 …](/api/uploads/…)`)이 그대로 보여 지저분.
+
+**수정**: `app/pages/issues/index.vue` 에서 `.row-preview` 스팬 + 미사용 CSS 제거(제목만 표시). API 의 `preview` 필드는 그대로 두되 미사용(추후 정리 가능).
+
+**검증/배포**(alias `7d859381`): 프로덕션 목록 SSR 에 `row-preview` 0개·`row-title` 유지. `lint`·빌드 통과.
+
+## 산출물 (§11)
+
+- **수정**: `app/pages/issues/index.vue`(목록 본문 미리보기 제거).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `7d859381`.

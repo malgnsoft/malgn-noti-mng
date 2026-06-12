@@ -59,7 +59,6 @@
               <td><span class="badge type">{{ issueTypeLabel(it.type) }}</span></td>
               <td>
                 <span class="row-title">{{ it.title }}</span>
-                <span v-if="it.preview" class="row-preview">{{ it.preview }}</span>
               </td>
               <td><span class="badge" :class="issueStatusClass(it.status)">{{ issueStatusLabel(it.status) }}</span></td>
               <td class="author">{{ it.authorName || '—' }}</td>
@@ -298,16 +297,6 @@ function open(id: number) {
   display: block;
   font-weight: 600;
   color: var(--ink-900);
-}
-.row-preview {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--ink-400);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 520px;
 }
 .author, .date {
   white-space: nowrap;
