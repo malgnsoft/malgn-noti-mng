@@ -254,6 +254,7 @@ function open(id: number) {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed; /* 컬럼 폭(c-type/status/author/date) 확정 → 헤더·본문 정렬 */
 }
 .table th {
   text-align: left;
