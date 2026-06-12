@@ -124,14 +124,14 @@ export function renderMarkdown(src: string): string {
       continue
     }
 
-    // 인용
-    const quote = line.match(/^>\s?(.*)$/)
+    // 인용 — escapeHtml 이 먼저 돌아 줄 시작 `>` 가 `&gt;` 로 바뀌므로 그 형태로 매칭한다.
+    const quote = line.match(/^&gt;\s?(.*)$/)
     if (quote) {
       flushAll()
       const buf: string[] = [quote[1] ?? '']
       i++
-      while (i < lines.length && /^>\s?(.*)$/.test(lines[i] ?? '')) {
-        buf.push((lines[i] ?? '').replace(/^>\s?/, ''))
+      while (i < lines.length && /^&gt;\s?(.*)$/.test(lines[i] ?? '')) {
+        buf.push((lines[i] ?? '').replace(/^&gt;\s?/, ''))
         i++
       }
       html.push(`<blockquote>${renderInline(buf.join(' '))}</blockquote>`)
