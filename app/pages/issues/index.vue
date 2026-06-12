@@ -12,6 +12,11 @@
     </section>
 
     <section class="filters">
+      <select v-model="filters.status" class="select">
+        <option value="">모든 상태</option>
+        <option v-for="o in ISSUE_STATUS_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+
       <div class="seg">
         <button
           class="seg-btn"
@@ -28,11 +33,6 @@
           @click="filters.type = o.value"
         >{{ o.label }}</button>
       </div>
-
-      <select v-model="filters.status" class="select">
-        <option value="">모든 상태</option>
-        <option v-for="o in ISSUE_STATUS_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
 
       <form class="search" @submit.prevent="applySearch">
         <UIcon name="i-lucide-search" class="search-ico" />
@@ -203,13 +203,11 @@ function open(id: number) {
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
+/* 전역 `.input,.select,.textarea{width:100%}` 충돌 방지 — 상태 필터는 내용 폭만. */
 .select {
-  padding: 7px 10px;
+  width: auto;
   font-size: 13px;
   color: var(--ink-700);
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md, 8px);
 }
 .search {
   position: relative;

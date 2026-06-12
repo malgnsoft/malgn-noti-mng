@@ -248,3 +248,20 @@
 
 - **수정**: `app/pages/issues/index.vue`(목록 본문 미리보기 제거).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `7d859381`.
+
+---
+
+## 12. 이슈 목록 필터 레이아웃 — 상태 필터 축소(좌상단)·검색 우측 유지
+
+**증상**: `/issues` 상태 필터(`모든 상태` select)가 **전체 폭으로 늘어나** 레이아웃을 차지(§7 `.row` 충돌과 동일 패턴).
+
+**근본원인**: 전역 `app/assets/css/main.css:555` **`.input,.select,.textarea{width:100%}`** 와 페이지의 `class="select"` 충돌. 페이지 scoped `.select` 가 width 를 안 줘서 전역 `width:100%` 가 적용됨.
+
+**수정**(`app/pages/issues/index.vue`): scoped `.select{width:auto}` 로 내용 폭만 차지하게 override(전역 화살표·높이 등 나머지 스타일은 유지). 템플릿 순서를 **상태 select → 분류 탭(seg) → 검색(search)** 으로 재배치 — 상태는 좌상단, 검색은 `margin-left:auto` 로 우측 끝 유지.
+
+**검증/배포**(alias `be6fee5d`): 실브라우저 — select 폭 89px·필터 좌측 끝(left 0)·검색 우측 끝(gap 0)·동일 행, 스크린샷 확인. `lint`·빌드 통과.
+
+## 산출물 (§12)
+
+- **수정**: `app/pages/issues/index.vue`(필터 레이아웃·`.select` 폭).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `be6fee5d`.
