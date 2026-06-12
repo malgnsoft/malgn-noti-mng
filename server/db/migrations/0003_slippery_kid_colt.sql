@@ -1,0 +1,1 @@
+ALTER TABLE `member` ADD `agreed_at` text;

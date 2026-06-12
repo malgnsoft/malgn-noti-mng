@@ -19,15 +19,31 @@
             {{ item.label }}
           </NuxtLink>
         </nav>
-        <a
-          class="gnb-link gnb-repo"
-          href="https://github.com/malgnsoft/malgn-noti-mng"
-          target="_blank"
-          rel="noopener"
-        >
-          <UIcon name="i-lucide-github" class="gnb-link-ico" />
-          GitHub
-        </a>
+        <div class="gnb-right">
+          <a
+            class="gnb-link gnb-repo"
+            href="https://github.com/malgnsoft/malgn-noti-mng"
+            target="_blank"
+            rel="noopener"
+          >
+            <UIcon name="i-lucide-github" class="gnb-link-ico" />
+            GitHub
+          </a>
+
+          <ClientOnly>
+            <div v-if="member" class="gnb-auth">
+              <NuxtLink to="/account" class="gnb-user">
+                <UIcon name="i-lucide-user-round" class="gnb-link-ico" />
+                {{ member.name }}
+              </NuxtLink>
+              <button class="gnb-logout" type="button" @click="onLogout">로그아웃</button>
+            </div>
+            <NuxtLink v-else to="/login" class="gnb-link gnb-login">
+              <UIcon name="i-lucide-log-in" class="gnb-link-ico" />
+              로그인
+            </NuxtLink>
+          </ClientOnly>
+        </div>
       </div>
     </header>
 
@@ -54,8 +70,15 @@ const nav = [
   { to: '/', label: '대시보드', icon: 'i-lucide-layout-dashboard' },
   { to: '/wbs', label: 'WBS', icon: 'i-lucide-gantt-chart' },
   { to: '/docs', label: '문서', icon: 'i-lucide-book-text' },
-  { to: '/history', label: '작업 이력', icon: 'i-lucide-history' }
+  { to: '/history', label: '작업 이력', icon: 'i-lucide-history' },
+  { to: '/members', label: '참여자', icon: 'i-lucide-users' }
 ]
+
+const { member, logout } = useAuth()
+async function onLogout() {
+  await logout()
+  await navigateTo('/')
+}
 </script>
 
 <style scoped>
@@ -158,6 +181,46 @@ const nav = [
 }
 .gnb-repo {
   color: var(--ink-400);
+}
+.gnb-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.gnb-auth {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+.gnb-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+.gnb-user:hover {
+  background: var(--ink-50);
+}
+.gnb-logout {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+.gnb-logout:hover {
+  color: var(--ink-900);
+  background: var(--ink-50);
+}
+.gnb-login {
+  color: var(--accent-ink);
 }
 
 .layout-main {

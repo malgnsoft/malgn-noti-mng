@@ -15,6 +15,20 @@
       "when": 1780646998312,
       "tag": "0001_pink_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781228108687,
+      "tag": "0002_bizarre_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1781230064630,
+      "tag": "0003_slippery_kid_colt",
+      "breakpoints": true
     }
   ]
 }
