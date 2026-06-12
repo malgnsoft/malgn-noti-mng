@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "db:generate": "drizzle-kit generate",
     "db:apply": "wrangler d1 migrations apply malgn-noti-project --remote",
-    "db:seed": "wrangler d1 execute malgn-noti-project --remote --file=server/db/seed.sql"
+    "db:seed": "wrangler d1 execute malgn-noti-project --remote --file=server/db/seed.sql",
+    "content:seed:gen": "node scripts/gen-content-seed.mjs"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.0",

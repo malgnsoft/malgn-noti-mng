@@ -549,7 +549,20 @@ wrangler pages deploy dist --project-name={APP} --branch=main \
 ```
 - 인증: wrangler OAuth. `--commit-message`는 ASCII로 명시(한글 커밋이면 wrangler가 UTF-8 에러).
 - D1 바인딩은 `wrangler.toml`의 `[[d1_databases]]`로 Pages 배포에 자동 연결.
-- 배포 후 검증: 라우트 200 + `/api/*` 응답이 D1 기준인지 + 프리렌더 문서 렌더.
+- 배포 후 검증: 라우트 200 + `/api/*` 응답이 D1 기준인지 + 문서 렌더(/docs·/history) + **비로그인 덤프 차단**(`curl /dump.docs.sql`·`/__nuxt_content/docs/sql_dump.txt` 가 302/401, 200 아님).
+
+### 11.1 ⚠️ 문서 덤프 인증 게이트 — docs 변경 배포 시 콘텐츠 D1 재시드 (Task #8)
+
+문서 덤프 게이트는 `/dump.docs.sql`(문서 전체 덤프)을 `_redirects`(엣지)로 차단한다. @nuxt/content 런타임은 D1(`_content_docs`)을 직접 조회하고 이 덤프는 **체크섬 불일치 시에만**(= `docs/` 내용이 바뀐 빌드) 재시드용으로 읽는다. 차단돼 있으면 그 재시드가 실패해 `/docs`가 빈다.
+
+- **`docs/` 내용이 그대로면**: 체크섬 동일 → 런타임이 덤프를 요청하지 않음 → 그냥 배포해도 정상.
+- **`docs/` 내용이 바뀐 배포면**: 배포 전/직후 **원격 콘텐츠 D1을 미리 시드**한다:
+  ```bash
+  pnpm build && pnpm content:seed:gen        # dist/content-seed.sql 생성(압축 덤프 복원)
+  wrangler d1 execute malgn-noti-project --remote --file=dist/content-seed.sql
+  ```
+  → `_content_docs/_content_info`가 현재 빌드 체크섬으로 갱신 → 런타임이 덤프를 요청하지 않음 → 차단해도 `/docs` 정상.
+- 게이트 구성: `nuxt.config.ts`(prerender.ignore `/__nuxt_content` + routeRules `/dump.docs.sql`→`/login`) · `server/middleware/auth.ts`(`/__nuxt_content/**` 세션 401). 상세 근거는 두 파일의 주석.
 
 ---
 
