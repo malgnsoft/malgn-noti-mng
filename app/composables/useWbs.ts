@@ -1,5 +1,5 @@
-// 자체 D1(malgn-noti-project) 기반 내부 API(/api/board) 조회 + 파생 통계.
-// 현황판(/board)과 대시보드(/)가 공유. 데이터 편집은 D1에서 수행.
+// WBS 공용 타입 + 표시 헬퍼(상태 메타·진행률 색·날짜 포맷·그룹핑).
+// 데이터 정본은 WBS(간트) — D1 wbs_item + wbsStageMeta(단계 진척). 대시보드 요약도 동일 소스.
 
 export type WbsStatus = 'done' | 'in_progress' | 'pending' | 'blocked'
 
@@ -65,45 +65,4 @@ export function wbsGroupedTasks(stage: WbsStage) {
     g.tasks.push(t)
   }
   return groups
-}
-
-export function useWbs() {
-  // 현황판 데이터는 자체 D1(malgn-noti-project) 기반 내부 API /api/board 에서 조회.
-  const { data, pending, error, refresh } = useFetch<{ data: WbsDocument }>('/api/board', {
-    key: 'board',
-  })
-
-  const doc = computed<WbsDocument | null>(() => data.value?.data ?? null)
-  const stages = computed<WbsStage[]>(() => doc.value?.stages ?? [])
-  const projectName = computed(() => doc.value?.projectName ?? '맑은 메시징')
-  const lastUpdated = computed(() => doc.value?.lastUpdated ?? '—')
-
-  const allTasks = computed(() => stages.value.flatMap(s => s.tasks))
-
-  const totalCounts = computed(() => {
-    const acc: Record<WbsStatus, number> = { done: 0, in_progress: 0, pending: 0, blocked: 0 }
-    for (const t of allTasks.value) acc[t.status]++
-    return acc
-  })
-
-  const weightedAverage = computed(() => {
-    const s = stages.value
-    if (s.length === 0) return 0
-    const totalWeight = s.reduce((a, x) => a + x.weight, 0)
-    const numerator = s.reduce((a, x) => a + x.weight * x.progress, 0)
-    return Math.round((numerator / totalWeight) * 10) / 10
-  })
-
-  return {
-    doc,
-    stages,
-    projectName,
-    lastUpdated,
-    allTasks,
-    totalCounts,
-    weightedAverage,
-    pending,
-    error,
-    refresh,
-  }
 }

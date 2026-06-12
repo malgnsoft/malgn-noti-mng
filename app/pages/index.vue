@@ -33,15 +33,15 @@
       </div>
     </section>
 
-    <!-- 프로젝트 현황 (현황판 요약) -->
+    <!-- 프로젝트 현황 (WBS 요약) -->
     <section class="board-summary">
       <div class="board-summary-head">
         <h2 class="board-summary-title">프로젝트 현황</h2>
-        <NuxtLink to="/board" class="board-summary-more">현황판 전체 보기 →</NuxtLink>
+        <NuxtLink to="/wbs" class="board-summary-more">전체 일정(WBS) 보기 →</NuxtLink>
       </div>
 
       <div v-if="wbsPending" class="board-summary-state">현황 불러오는 중…</div>
-      <div v-else-if="wbsError || !wbsDoc" class="board-summary-state">현황을 불러올 수 없습니다.</div>
+      <div v-else-if="wbsError" class="board-summary-state">현황을 불러올 수 없습니다.</div>
       <AppWbsOverview
         v-else
         :stages="stages"
@@ -106,6 +106,9 @@
 </template>
 
 <script setup lang="ts">
+import { wbsSteps, wbsStageMeta } from '~/utils/wbsData'
+import type { WbsStage } from '~/composables/useWbs'
+
 const shortcuts = [
   { label: '사용자단 콘솔', url: 'https://malgn-noti.pages.dev' },
   { label: '관리자단 콘솔', url: 'https://malgn-noti-admin.pages.dev' },
@@ -124,13 +127,35 @@ const directions = [
   '디자인: Relay-inspired 저밀도 시스템 · 스택: Nuxt 3 + Tailwind v4 + Nuxt UI v3',
 ]
 
-const {
-  doc: wbsDoc,
-  stages,
-  weightedAverage,
-  pending: wbsPending,
-  error: wbsError,
-} = useWbs()
+// 현황 요약은 WBS(간트)와 동일 소스 — wbsStageMeta(단계 진척) + /api/wbs(항목 수).
+const STEP_EMOJI: Record<number, string> = { 1: '🎯', 2: '📐', 3: '📋', 4: '🛠️', 5: '🧪' }
+const { data: wbsRes, pending: wbsPending, error: wbsError } = await useFetch<{ data: { step: number }[] }>('/api/wbs', { key: 'wbs-overview' })
+const wbsItems = computed(() => wbsRes.value?.data ?? [])
+
+const stages = computed<WbsStage[]>(() =>
+  Object.keys(wbsStageMeta).map((k) => {
+    const num = Number(k)
+    const meta = wbsStageMeta[num]!
+    const [no, name] = (wbsSteps[num] ?? `Step ${num} · `).split(' · ')
+    return {
+      id: `step-${num}`,
+      no: no ?? `Step ${num}`,
+      emoji: STEP_EMOJI[num] ?? '•',
+      name: name ?? '',
+      summary: '',
+      weight: meta.weight,
+      progress: meta.progress,
+      tasks: wbsItems.value.filter(i => i.step === num) as unknown as WbsStage['tasks'],
+    }
+  }),
+)
+
+const weightedAverage = computed(() => {
+  const metas = Object.values(wbsStageMeta)
+  const tw = metas.reduce((a, s) => a + s.weight, 0)
+  if (!tw) return 0
+  return Math.round((metas.reduce((a, s) => a + s.weight * s.progress, 0) / tw) * 10) / 10
+})
 
 const { data: all } = await useAllDocs()
 

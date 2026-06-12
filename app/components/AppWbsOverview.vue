@@ -46,7 +46,7 @@
       <NuxtLink
         v-for="(s, i) in stages"
         :key="s.id"
-        :to="`/board#stage-${s.id}`"
+        to="/wbs"
         class="stage-box"
       >
         <div class="stage-box-top">
@@ -76,7 +76,7 @@
         <NuxtLink
           v-for="(s, i) in stages"
           :key="s.id"
-          :to="`/board#stage-${s.id}`"
+          to="/wbs"
           class="overview-row"
           :class="i > 0 ? 'overview-row--bordered' : ''"
         >

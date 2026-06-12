@@ -99,6 +99,16 @@
 - 단계 진척: **Step 4 서비스 개발 55→60**(`wbsStageMeta` 코드 + 현황판 `stage` D1 동시) → 전체 가중평균 ≈ 47.8%. mng 배포(alias `958e67bf`).
 - 현황판(`/board`) 작업(`task`) 상태 현행화: 관리자 **회원·고객사** pending→진행중, **발송 엔진** 진행중→완료, **결제·크레딧** pending→진행중, **NHN SMS 실 발송** pending→완료. Step 4 카운트 = 완료 32·진행 8·대기 12. (board는 D1 SSR → 즉시 반영.)
 
+## 11. mng — 현황판(/board) 폐지, WBS 정본 단일화
+
+**결정**: `/board`(현황판)와 `/wbs`(간트)가 같은 진척을 **3중 관리**(D1 `wbs_item` · D1 `stage`/`task` · `BOARD.md`)하던 중복 구조. WBS가 상위호환(타임라인·담당 필터·CRUD·KPI·단계 비중)이라 현황판을 폐지하고 WBS를 정본으로 단일화(사용자 결정).
+
+- **제거**: `app/pages/board.vue` · `server/api/board.get.ts` · `server/utils/boardSeed.ts` · `docs/BOARD.md` · GNB '현황판' 메뉴.
+- **대시보드(`/`) 전환**: 진척 요약 소스를 `/api/board` → **WBS 동일 소스**(`wbsStageMeta` 단계 진척 + `/api/wbs` 항목 수)로 교체. `AppWbsOverview` 단계 박스 링크 `/board#stage-*` → `/wbs`.
+- **`useWbs.ts`**: `/api/board` 데이터 페처(`useWbs()`) 제거, 타입·표시 헬퍼(`wbsProgressFill` 등)만 유지.
+- D1 `stage`/`task` 테이블 + `schema.ts` 정의는 **휴면 보존**(코드 미참조, 드롭은 후속).
+- 검증: lint·typecheck 통과. `/board`·`/docs/board` **404** 확인, 대시보드·`/wbs` 200. mng 배포(alias `099cce0b`).
+
 ---
 
 ## 11. 멀티에이전트 2차 스프린트 — 회원·인증 도메인 풀스택(사용자단·관리자단·API)
@@ -127,7 +137,7 @@
 
 ## 산출물
 
-- `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`)·WBS 진척 반영(`958e67bf`). 라이브 <https://malgn-noti-mng.pages.dev>.
+- `malgn-noti-mng` Pages 배포 다수 — WBS 스크롤(`32118503`)·비중·기준일 점프·블루프린트·`/docs/board` 수정(`1cddc81f`)·WBS 진척 반영(`958e67bf`)·BOARD.md 동기화(`50f4bf87`)·**현황판 폐지/WBS 단일화(`099cce0b`)**. 라이브 <https://malgn-noti-mng.pages.dev>.
 - `malgn-noti`(사용자단) Pages 배포 — 인증 페이지(alias `6f535226`). 라이브 <https://malgn-noti.pages.dev>.
 - `malgn-noti-api` Workers 배포 — 크레딧 정산·취소/환불·비번 재설정(Version `de6775c2`). <https://malgn-noti-api.malgnsoft.workers.dev>.
 - `malgn-noti-admin` Pages 배포 — 발신정보 섹션(`4520c8ab`) · 고객사 그룹(`e11d362f`) · 상세 재구성+단가 모달+로그인 이력+탈퇴 계정(`3f61d7e5`) · 화면 보강+위험액션 사유+스크롤락+ops 타입 정합(`03aa7735`). 라이브 <https://malgn-noti-admin.pages.dev>. 커밋 push 완료.
