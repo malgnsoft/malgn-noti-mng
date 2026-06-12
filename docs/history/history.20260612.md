@@ -1,6 +1,6 @@
 # 2026-06-12 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증. **(§6→§7)** 재배포 후에도 동일 리포트 → §6 에선 HTML `Cache-Control` 부재로 **캐시 탓**이라 보고 `no-cache` 미들웨어를 넣었으나(`34c31abb`), 이는 **오진**. **(§7)** Playwright 실브라우저 computed style 실측으로 본문 행 `class="row"` 가 전역 유틸 **`.row{display:flex}`(main.css:1389)** 와 충돌해 `tbody tr=flex`/`td=block` 이 되며 `table-layout:fixed` 컬럼을 무시함을 확정 → `app/pages/issues/index.vue` 본문 행 클래스 `row`→**`issue-row`** 분리로 수정·배포(`b2134bd8`), 헤더·본문 5컬럼 좌표 일치(`ALIGNED:true`)·스크린샷 정상 검증. 교훈: 표 행에 범용 유틸명 금지·레이아웃 버그는 실브라우저로 확정. **(§8)** **이슈 등록/수정 이미지 업로드**(Cloudflare R2 + 본문 마크다운 `![](url)` 첨부) 구현 — R2 버킷 `malgn-noti-mng-files`(FILES 바인딩)·업로드/서빙 API(`/api/uploads`, 인증 게이트·png/jpg/gif/webp·5MB·UUID 키·immutable)·`markdown.ts` 이미지 렌더 추가·`AppIssueForm` 첨부 버튼/드래그/붙여넣기. E2E(curl 69B 라운드트립·쿠키 없으면 401) + 실브라우저(Playwright `.doc-prose img` 로드 `IMAGE_OK:true`) GREEN. alias `b80f7bd2`. typecheck·lint 통과.
+> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증. **(§6→§7)** 재배포 후에도 동일 리포트 → §6 에선 HTML `Cache-Control` 부재로 **캐시 탓**이라 보고 `no-cache` 미들웨어를 넣었으나(`34c31abb`), 이는 **오진**. **(§7)** Playwright 실브라우저 computed style 실측으로 본문 행 `class="row"` 가 전역 유틸 **`.row{display:flex}`(main.css:1389)** 와 충돌해 `tbody tr=flex`/`td=block` 이 되며 `table-layout:fixed` 컬럼을 무시함을 확정 → `app/pages/issues/index.vue` 본문 행 클래스 `row`→**`issue-row`** 분리로 수정·배포(`b2134bd8`), 헤더·본문 5컬럼 좌표 일치(`ALIGNED:true`)·스크린샷 정상 검증. 교훈: 표 행에 범용 유틸명 금지·레이아웃 버그는 실브라우저로 확정. **(§8)** **이슈 등록/수정 이미지 업로드**(Cloudflare R2 + 본문 마크다운 `![](url)` 첨부) 구현 — R2 버킷 `malgn-noti-mng-files`(FILES 바인딩)·업로드/서빙 API(`/api/uploads`, 인증 게이트·png/jpg/gif/webp·5MB·UUID 키·immutable)·`markdown.ts` 이미지 렌더 추가·`AppIssueForm` 첨부 버튼/드래그/붙여넣기. E2E(curl 69B 라운드트립·쿠키 없으면 401) + 실브라우저(Playwright `.doc-prose img` 로드 `IMAGE_OK:true`) GREEN. alias `b80f7bd2`. typecheck·lint 통과. **(§9)** **이슈 상세(조회) 페이지 디자인 정리** — 투박한 회색 액션바 제거, 수정/삭제를 헤더 우측 상단으로, 상태 변경 select 를 메타 라인에 인라인 통합(상태 라벨 두 줄 깨짐 `white-space:nowrap` 로 해소), 제목/여백 정돈. 실브라우저 검증·alias `2fd403a5`. (부수 발견: markdown `>` blockquote 가 escape 순서로 미파싱 — 별건 후속.)
 
 ---
 
@@ -183,3 +183,25 @@
 - **수정**: `wrangler.toml`(R2 바인딩), `server/middleware/auth.ts`(게이트 prefix), `app/utils/markdown.ts`(이미지 렌더), `app/components/AppIssueForm.vue`(첨부 UI).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `b80f7bd2`. 업로드·서빙·렌더 E2E GREEN.
 - **알려진 한계**: 이미지는 본문에 삽입만(삭제 시 R2 객체 GC 미구현 — 고아 객체는 후속 정리 잡 필요). 업로드 후 본문에서 마크다운을 지워도 R2 객체는 남음.
+
+---
+
+## 9. 이슈 상세(조회) 페이지 디자인 정리
+
+**요청**: `/issues/[id]` 조회 페이지 디자인 개선("별루").
+
+**문제**: ① 작성자용 액션바가 투박한 **회색 박스**(`.owner-bar`)로 본문과 분리돼 떠 보임. ② 그 안의 "상태" 라벨이 폭 부족으로 **두 줄(상/태)로 깨짐**.
+
+**개선**(`app/pages/issues/[id].vue`, Relay 저밀도·hairline 기조):
+- 회색 액션바 제거. **수정/삭제**(아이콘 추가)를 헤더 우측 상단으로 이동(`.head-top` = 배지 줄 ↔ 액션 `space-between`).
+- **상태 변경 select** 를 메타 라인(`작성자 · 작성일 · 상태 [▾]`)에 인라인 통합 — 별도 박스 없이 가볍게. `.status-label` 에 `white-space:nowrap` 로 줄바꿈 차단, select 는 컴팩트(`--r-sm`)·hover 보더.
+- 제목 26px·자간 정리, 작성자명 강조(`.author`), 본문 상단 여백 확대.
+- 검증: 빌드·배포(alias `2fd403a5`) 후 실브라우저(Playwright, 작성자 세션) — 상태 라벨 1줄(높이 20px=lineHeight), 수정/삭제 2개 노출, 스크린샷으로 정렬·간격 육안 확인. `lint`·빌드 통과.
+
+**부수 발견(미수정)**: `app/utils/markdown.ts` 가 `escapeHtml` 을 라인 분해보다 **먼저** 수행 → `>` 가 `&gt;` 로 escape 되어 **blockquote(`> 인용`) 파싱이 안 됨**(원문 그대로 노출). 이슈 본문에서 인용 사용 시에만 발생하는 기존 버그 — 이번 디자인 작업 범위 밖이라 별건으로 남김(escape 순서/블록 감지 분리 리팩터 필요).
+
+## 산출물 (§9)
+
+- **수정**: `app/pages/issues/[id].vue`(상세 헤더/액션/상태 컨트롤 재배치·스타일).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `2fd403a5`. 작성자/비작성자 뷰 정상.
+- **후속 후보**: markdown blockquote escape 순서 버그 수정.
