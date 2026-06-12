@@ -109,6 +109,14 @@
 - D1 `stage`/`task` 테이블 + `schema.ts` 정의는 **휴면 보존**(코드 미참조, 드롭은 후속).
 - 검증: lint·typecheck 통과. `/board`·`/docs/board` **404** 확인, 대시보드·`/wbs` 200. mng 배포(alias `099cce0b`).
 
+## 12. 문서 위치 분리 — 중앙/관리 문서는 mng 단일화
+
+**결정**(사용자): 중앙·관리 문서는 `malgn-noti-mng/docs`에서만 관리, 사용자단 `malgn-noti/docs`에는 프론트 정본만 유지.
+
+- `malgn-noti/docs`에서 **STACK·WBS·MEMBERSHIP·NICE_AUTH 삭제**(삭제 전 mng와 diff — STACK/MEMBERSHIP/NICE_AUTH 동일, WBS는 mng가 `docs/` 경로 반영 최신 → 유실 없음). 유지: `DESIGN`·`FRONTEND`·`PAGES` + `pages/*` 8종.
+- 유지 문서의 끊긴 링크를 mng 경로로 수정: `DESIGN.md`→STACK, `pages/CONTRACT.md`→MEMBERSHIP, `pages/SIGNUP.md`→WBS (`../../../malgn-noti-mng/docs/<NAME>.md`).
+- `CLAUDE.md` §7.1 "페이지 정본" — 링크 위생 + **문서 위치 분리** 규칙 추가(중앙·도메인 정본은 mng가 정본, 중복 보관 안 함). **양 레포 CLAUDE.md 동일 반영**.
+
 ---
 
 ## 11. 멀티에이전트 2차 스프린트 — 회원·인증 도메인 풀스택(사용자단·관리자단·API)
