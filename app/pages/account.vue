@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
+// 인증은 전역 미들웨어(01.require-auth.global)가 처리한다.
 
 const { member, updateProfile, changePassword } = useAuth()
 const toast = useToast()

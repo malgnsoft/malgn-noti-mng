@@ -1,32 +1,3 @@
-import { readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-// docs/ 트리를 재귀 순회해 모든 문서 라우트를 "정규 소문자"로 열거한다.
-//  - Cloudflare 는 대소문자를 구분하므로, 앱 링크(소문자 /docs/design)와
-//    프리렌더 산출 경로가 반드시 일치해야 한다.
-//  - 크롤링(crawlLinks)을 끄면 마크다운 문서 안의 상대 링크(./FRONTEND.md →
-//    /docs/FRONTEND)가 대문자 디렉터리를 만드는 문제도 사라진다.
-//  - 파일명 점(history.20260604)으로 크롤러가 라우트를 건너뛰는 문제도 회피.
-const docDir = fileURLToPath(new URL('./docs', import.meta.url))
-
-function collectDocRoutes(dir: string, base = ''): string[] {
-  const out: string[] = []
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      out.push(...collectDocRoutes(join(dir, entry.name), `${base}${entry.name}/`))
-    } else if (entry.name.endsWith('.md')) {
-      const slug = (base + entry.name.replace(/\.md$/, '')).toLowerCase()
-      out.push(`/docs/${slug}`)
-    }
-  }
-  return out
-}
-
-// '/' 와 '/board' 는 런타임에 D1(/api/board)을 조회하므로 프리렌더하지 않고 SSR(Functions).
-// /wbs 는 D1(/api/wbs) 런타임 조회 + 편집이라 SSR(프리렌더 제외).
-const prerenderRoutes = ['/docs', '/history', ...collectDocRoutes(docDir)]
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   future: { compatibilityVersion: 4 },
@@ -43,14 +14,17 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css', '~/assets/css/prose.css'],
 
-  // Cloudflare Pages (Functions/SSR) — /api/board 가 D1 바인딩(DB)을 런타임 조회.
-  // 문서·이력 페이지는 프리렌더, '/'·'/board' 는 SSR.
+  // Cloudflare Pages (Functions/SSR). 모든 라우트를 SSR(Functions)로 처리한다.
+  // ⚠️ 인증 게이트(Task #2): 프리렌더를 끈다. 프리렌더 정적 HTML 은 워커를
+  //    거치지 않아 세션 게이트를 우회해 비로그인자에게 노출되므로, 문서·이력·WBS
+  //    페이지도 매 요청 SSR 하여 전역 미들웨어가 작동하게 한다.
+  //    @nuxt/content 는 D1(_content_docs)에서 런타임 조회되므로 SSR 가능.
   nitro: {
     preset: 'cloudflare-pages',
     prerender: {
       crawlLinks: false,
       failOnError: false,
-      routes: prerenderRoutes
+      routes: []
     }
   },
 
