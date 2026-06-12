@@ -99,3 +99,27 @@
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> — 이슈 목록 정렬 fix 반영. alias `2463c918`.
 - **검증**: 프로덕션 fix-CSS `index.Cc80tf4J.css` HTTP 200 + `table-layout:fixed` GREEN.
 - **관련 커밋(기존)**: `21bc838`(이슈 게시판)·`4205411`(정렬 fix)·`1c21522`(재시드 도구) — 본 §5 에서 배포·이력 정합.
+
+---
+
+## 6. 재배포 후에도 "정렬 안 됨" 리포트 → 근본원인 = 브라우저 캐시, HTML no-cache 로 재발 차단
+
+**증상**: §5 재배포 후에도 사용자가 `/issues` 목록 정렬이 여전히 깨져 보인다고 리포트.
+
+**진단(프로덕션 실측)**: stale 배포 가설을 버리고 **프로덕션 SSR HTML 을 임시 로그인 세션으로 직접 수신**해 실제 DOM·CSS 를 검증.
+- 임시계정 `zz_align_chk` 로 `signup`(필드 `agreedPrivacy:true`) → 세션 쿠키로 `GET /issues` **200**(27KB).
+- 렌더 DOM = 정상 5컬럼 테이블: `thead` `c-type/제목/c-status/c-author/c-date` 5×`th`, `tbody tr.row` 5×`td`, 전 셀 동일 스코프 `data-v-51f06334`.
+- scoped CSS 가 **HTML 에 인라인**돼 있고 `.table[data-v-51f06334]{table-layout:fixed;width:100%}` + `.c-type/.c-status{width:84px}` `.c-author{120px}` `.c-date{140px}` 전부 포함. specificity `.table[data-v]`(0,2,0) > 전역 `.table`(0,1,0) → fixed 레이아웃이 이김. **즉 라이브 HTML 은 이미 정렬 정상.**
+- 응답 헤더에 **`Cache-Control` 부재**, 서비스워커 없음(`/sw.js` 는 게이트로 302) → 사용자 화면은 **브라우저 휴리스틱 캐시의 옛(auto-layout) 문서**가 원인으로 확정.
+
+**조치(재발 차단)**: `server/middleware/no-cache.ts` 신설 — `text/html` 내비게이션 응답에 `Cache-Control: no-cache, must-revalidate` 부여. 해시 immutable 에셋(`/_nuxt/*`)·API(`/api/*`)·콘텐츠 덤프(`/__nuxt_content`)는 제외(에셋 장기 캐시 유지). 빌드·배포(alias `34c31abb`).
+- 검증: `/`·`/login`(html) → **`cache-control: no-cache, must-revalidate`**, `/_nuxt/entry.*.css` → **`public, max-age=31536000, immutable`**(불변). 이후 매 방문 서버 재검증 → 배포 직후 최신 HTML 보장.
+- 사용자 안내: 이번 1회는 강력 새로고침(⌘+Shift+R) 또는 배포 alias 직접 접속으로 기존 캐시 무효화 필요.
+
+**임시 데이터 정리**: D1 `member` 의 `zz_align_chk`(id 10) 삭제, `zz_%` 0건 확인.
+
+## 산출물 (§6)
+
+- **신규**: `server/middleware/no-cache.ts`(HTML no-cache 미들웨어).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `34c31abb`. HTML `no-cache` / 에셋 immutable 헤더 GREEN 검증.
+- **결론**: 정렬 fix 는 §5 시점에 이미 라이브 정상. §6 은 캐시로 인한 "옛 화면" 재발을 헤더로 차단.
