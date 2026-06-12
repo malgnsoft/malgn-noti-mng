@@ -1,6 +1,6 @@
 # 2026-06-12 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증. **(§6→§7)** 재배포 후에도 동일 리포트 → §6 에선 HTML `Cache-Control` 부재로 **캐시 탓**이라 보고 `no-cache` 미들웨어를 넣었으나(`34c31abb`), 이는 **오진**. **(§7)** Playwright 실브라우저 computed style 실측으로 본문 행 `class="row"` 가 전역 유틸 **`.row{display:flex}`(main.css:1389)** 와 충돌해 `tbody tr=flex`/`td=block` 이 되며 `table-layout:fixed` 컬럼을 무시함을 확정 → `app/pages/issues/index.vue` 본문 행 클래스 `row`→**`issue-row`** 분리로 수정·배포(`b2134bd8`), 헤더·본문 5컬럼 좌표 일치(`ALIGNED:true`)·스크린샷 정상 검증. 교훈: 표 행에 범용 유틸명 금지·레이아웃 버그는 실브라우저로 확정.
+> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증. **(§6→§7)** 재배포 후에도 동일 리포트 → §6 에선 HTML `Cache-Control` 부재로 **캐시 탓**이라 보고 `no-cache` 미들웨어를 넣었으나(`34c31abb`), 이는 **오진**. **(§7)** Playwright 실브라우저 computed style 실측으로 본문 행 `class="row"` 가 전역 유틸 **`.row{display:flex}`(main.css:1389)** 와 충돌해 `tbody tr=flex`/`td=block` 이 되며 `table-layout:fixed` 컬럼을 무시함을 확정 → `app/pages/issues/index.vue` 본문 행 클래스 `row`→**`issue-row`** 분리로 수정·배포(`b2134bd8`), 헤더·본문 5컬럼 좌표 일치(`ALIGNED:true`)·스크린샷 정상 검증. 교훈: 표 행에 범용 유틸명 금지·레이아웃 버그는 실브라우저로 확정. **(§8)** **이슈 등록/수정 이미지 업로드**(Cloudflare R2 + 본문 마크다운 `![](url)` 첨부) 구현 — R2 버킷 `malgn-noti-mng-files`(FILES 바인딩)·업로드/서빙 API(`/api/uploads`, 인증 게이트·png/jpg/gif/webp·5MB·UUID 키·immutable)·`markdown.ts` 이미지 렌더 추가·`AppIssueForm` 첨부 버튼/드래그/붙여넣기. E2E(curl 69B 라운드트립·쿠키 없으면 401) + 실브라우저(Playwright `.doc-prose img` 로드 `IMAGE_OK:true`) GREEN. alias `b80f7bd2`. typecheck·lint 통과.
 
 ---
 
@@ -152,3 +152,34 @@
 - **수정**: `app/pages/issues/index.vue`(본문 행 `.row`→`.issue-row`, 충돌 주석).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `b2134bd8` — 이슈 목록 정렬 **실브라우저 검증 GREEN**.
 - **교훈**: scoped-CSS 인라인·specificity 가 "정상"이어도 **전역 유틸 클래스명 충돌(`.row`)** 은 정적 검사로 안 드러난다. 레이아웃 버그는 **실브라우저 computed style** 로 확정할 것. 표 행에 범용 유틸명(`row`/`col`)을 쓰지 말 것.
+
+---
+
+## 8. 이슈 등록/수정 시 이미지 업로드 (Cloudflare R2 + 본문 마크다운 첨부)
+
+**요청/결정**: 이슈 작성·수정 시 이미지 첨부 지원. 저장은 **Cloudflare R2**(추천 채택), 본문엔 마크다운 `![alt](url)` 로 삽입.
+
+**인프라**:
+- R2 버킷 **`malgn-noti-mng-files`** 신규 생성. `wrangler.toml` 에 `[[r2_buckets]] binding="FILES"` 추가(D1 `DB` 와 동일하게 Pages 가 wrangler.toml 바인딩을 적용 — 프로덕션 검증으로 확인).
+
+**서버**:
+- `server/utils/uploads.ts` — `useFileStore(event)`(R2 `FILES` 바인딩, dev 바인딩 없으면 인메모리 폴백). 화이트리스트 MIME(png/jpg/gif/webp)·5MB 상한 상수.
+- `server/api/uploads/index.post.ts` — 세션 필수. `readMultipartFormData` 로 `file` 파트 수신, MIME/크기 검증 후 `<uuid>.<ext>` 키로 R2 `put`, `{ url:'/api/uploads/<key>', name }` 반환. SVG/스크립트 차단.
+- `server/api/uploads/[key].get.ts` — 세션 필수. 키 형식 정규식 검증 후 R2 `get` → content-type + `private, max-age=31536000, immutable` 로 서빙. 동일 출처 `<img>` 요청은 세션 쿠키 동반 → 로그인자만 노출.
+- `server/middleware/auth.ts` — `PROTECTED_PREFIXES` 에 `/api/uploads` 추가(업로드·서빙 모두 인증 게이트).
+
+**클라이언트**:
+- `app/utils/markdown.ts` — 이미지 `![alt](url)` 렌더 추가(링크보다 먼저 처리해 `!` 소비, `safeHref` 로 src 제한 → 내부 `/api/uploads/…`·http(s) 만). `.doc-prose img` 는 기존 스타일(max-width:100%) 재사용.
+- `app/components/AppIssueForm.vue` — 본문 에디터에 **이미지 첨부 버튼 + 드래그&드롭 + 붙여넣기**. 업로드 후 커서 위치에 `![name](url)` 삽입(`bodyEl` ref·`setSelectionRange`). 클라이언트 측 MIME/5MB 선검증, 업로드 중 상태·에러 표시. 신규/수정 폼 공용이라 양쪽 모두 적용.
+
+**배포/검증**(프로덕션, alias `b80f7bd2`):
+- E2E(curl, 임시세션) — `POST /api/uploads`(1×1 PNG) **200**+url, `GET /api/uploads/<key>`(쿠키) **200** image/png·immutable·69B 라운드트립 일치(R2 영속 확인), 쿠키 없으면 **401**.
+- 실브라우저(Playwright) — 이미지 본문 이슈 상세에서 `.doc-prose img` 로드 확인(`naturalWidth=1`·`complete=true`, `IMAGE_OK:true`).
+- 정리: 테스트 이슈 1건·임시회원 `zz_%`·R2 테스트 객체 삭제(실데이터 `첫 게시물`만 잔존). `pnpm typecheck`·`lint` 통과.
+
+## 산출물 (§8)
+
+- **신규**: `server/utils/uploads.ts`, `server/api/uploads/index.post.ts`, `server/api/uploads/[key].get.ts`, R2 버킷 `malgn-noti-mng-files`.
+- **수정**: `wrangler.toml`(R2 바인딩), `server/middleware/auth.ts`(게이트 prefix), `app/utils/markdown.ts`(이미지 렌더), `app/components/AppIssueForm.vue`(첨부 UI).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `b80f7bd2`. 업로드·서빙·렌더 E2E GREEN.
+- **알려진 한계**: 이미지는 본문에 삽입만(삭제 시 R2 객체 GC 미구현 — 고아 객체는 후속 정리 잡 필요). 업로드 후 본문에서 마크다운을 지워도 R2 객체는 남음.

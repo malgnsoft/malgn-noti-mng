@@ -9,3 +9,8 @@ binding = "DB"
 database_name = "malgn-noti-project"
 database_id = "3c8c37e3-6125-4b4e-baf9-0267fa2f23b7"
 migrations_dir = "server/db/migrations"
+
+# 이슈 첨부 이미지 저장소 (Cloudflare R2). 업로드/서빙은 /api/uploads 경유(로그인 게이트).
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "malgn-noti-mng-files"

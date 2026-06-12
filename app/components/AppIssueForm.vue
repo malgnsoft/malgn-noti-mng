@@ -28,15 +28,48 @@
       >
     </label>
 
-    <label class="field">
-      <span class="field-label">본문 <span class="opt">(마크다운 지원)</span></span>
-      <textarea
-        v-model="form.body"
-        class="field-input field-textarea"
-        rows="14"
-        placeholder="내용을 입력하세요. # 제목, **굵게**, - 목록, `코드`, [링크](https://…) 등 마크다운을 쓸 수 있습니다."
-      />
-    </label>
+    <div class="field">
+      <span class="field-label">
+        본문 <span class="opt">(마크다운 지원 · 이미지 첨부 가능)</span>
+      </span>
+      <div
+        class="editor"
+        :class="{ dragover: dragging }"
+        @dragover.prevent="dragging = true"
+        @dragleave.prevent="dragging = false"
+        @drop.prevent="onDrop"
+      >
+        <textarea
+          ref="bodyEl"
+          v-model="form.body"
+          class="field-input field-textarea"
+          rows="14"
+          placeholder="내용을 입력하세요. # 제목, **굵게**, - 목록, `코드`, [링크](https://…) 등 마크다운을 쓸 수 있습니다.&#10;이미지는 아래 ‘이미지 첨부’ 버튼·드래그·붙여넣기로 추가됩니다."
+          @paste="onPaste"
+        />
+        <div class="editor-bar">
+          <button
+            type="button"
+            class="attach"
+            :disabled="uploading || pending"
+            @click="fileEl?.click()"
+          >
+            <UIcon name="i-lucide-image-plus" class="attach-ico" />
+            {{ uploading ? '업로드 중…' : '이미지 첨부' }}
+          </button>
+          <span class="attach-hint">PNG·JPG·GIF·WEBP · 5MB 이하 · 드래그/붙여넣기 가능</span>
+        </div>
+        <input
+          ref="fileEl"
+          class="file-input"
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          multiple
+          @change="onPick"
+        >
+      </div>
+      <p v-if="uploadError" class="form-error" role="alert">{{ uploadError }}</p>
+    </div>
 
     <p v-if="error" class="form-error" role="alert">{{ error }}</p>
 
@@ -82,6 +115,90 @@ const form = reactive<IssueFormValue>({
   body: props.initial.body ?? '',
   priority: props.initial.priority ?? '',
 })
+
+// ── 이미지 첨부 ────────────────────────────────────────────
+const bodyEl = ref<HTMLTextAreaElement>()
+const fileEl = ref<HTMLInputElement>()
+const uploading = ref(false)
+const uploadError = ref('')
+const dragging = ref(false)
+
+const ALLOWED = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+const MAX_BYTES = 5 * 1024 * 1024
+
+// 커서 위치(또는 끝)에 텍스트 삽입 후 캐럿을 삽입 끝으로 이동.
+function insertAtCursor(text: string) {
+  const el = bodyEl.value
+  if (!el) { form.body += text; return }
+  const start = el.selectionStart ?? form.body.length
+  const end = el.selectionEnd ?? form.body.length
+  form.body = form.body.slice(0, start) + text + form.body.slice(end)
+  nextTick(() => {
+    el.focus()
+    const pos = start + text.length
+    el.setSelectionRange(pos, pos)
+  })
+}
+
+// alt 텍스트의 마크다운 특수문자 제거(링크/이미지 구문 깨짐 방지).
+function safeAlt(name: string): string {
+  return name.replace(/[[\]()]/g, '').trim() || '이미지'
+}
+
+async function uploadOne(file: File): Promise<void> {
+  if (!ALLOWED.includes(file.type)) {
+    throw new Error('PNG·JPG·GIF·WEBP 이미지만 첨부할 수 있습니다')
+  }
+  if (file.size > MAX_BYTES) {
+    throw new Error('이미지는 5MB 이하만 첨부할 수 있습니다')
+  }
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await $fetch<{ data: { url: string, name: string } }>('/api/uploads', {
+    method: 'POST',
+    body: fd,
+  })
+  const alt = safeAlt(res.data.name)
+  insertAtCursor(`\n![${alt}](${res.data.url})\n`)
+}
+
+async function uploadFiles(files: File[]) {
+  const imgs = files.filter(f => f.type.startsWith('image/'))
+  if (!imgs.length) return
+  uploadError.value = ''
+  uploading.value = true
+  try {
+    for (const f of imgs) await uploadOne(f)
+  }
+  catch (e) {
+    uploadError.value = extractError(e, '이미지 업로드에 실패했습니다')
+  }
+  finally {
+    uploading.value = false
+  }
+}
+
+function onPick(e: Event) {
+  const input = e.target as HTMLInputElement
+  uploadFiles([...(input.files ?? [])])
+  input.value = '' // 같은 파일 재선택 허용
+}
+
+function onDrop(e: DragEvent) {
+  dragging.value = false
+  uploadFiles([...(e.dataTransfer?.files ?? [])])
+}
+
+function onPaste(e: ClipboardEvent) {
+  const files = [...(e.clipboardData?.items ?? [])]
+    .filter(it => it.kind === 'file')
+    .map(it => it.getAsFile())
+    .filter((f): f is File => !!f && f.type.startsWith('image/'))
+  if (files.length) {
+    e.preventDefault()
+    uploadFiles(files)
+  }
+}
 
 function onSubmit() {
   if (!form.title.trim()) return
@@ -134,6 +251,53 @@ function onSubmit() {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   line-height: 1.6;
+  display: block;
+}
+.editor {
+  position: relative;
+  border-radius: var(--r-md, 8px);
+}
+.editor.dragover {
+  outline: 2px dashed var(--accent-ink);
+  outline-offset: 2px;
+}
+.editor-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.attach {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 8px);
+  cursor: pointer;
+}
+.attach:hover:not(:disabled) {
+  background: var(--ink-50);
+}
+.attach:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.attach-ico {
+  width: 15px;
+  height: 15px;
+}
+.attach-hint {
+  font-size: 12px;
+  color: var(--ink-400);
+}
+.file-input {
+  display: none;
 }
 .form-error {
   font-size: 13px;

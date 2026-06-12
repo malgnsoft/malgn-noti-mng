@@ -25,6 +25,12 @@ function safeHref(url: string): string | null {
 // 인라인 코드 외 서식(링크·굵게·기울임)을 입력(이미 이스케이프됨)에 적용.
 function formatSpans(text: string): string {
   let out = text
+  // 이미지 `![alt](url)` — 반드시 링크보다 먼저 처리(앞의 `!` 를 소비). src 는 safeHref 로 제한.
+  out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_m, alt, url) => {
+    const src = safeHref(url)
+    if (!src) return ''
+    return `<img src="${src}" alt="${alt}" loading="lazy">`
+  })
   out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label, url) => {
     const href = safeHref(url)
     if (!href) return label

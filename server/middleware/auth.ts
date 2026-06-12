@@ -12,7 +12,7 @@ import { getSessionMemberId } from '../utils/auth'
 //    (event.$fetch, 로그인 사용자 쿠키 전달)는 통과하고 익명만 차단해 /docs 가 깨지지 않게.
 //    (루트 정적 사본 `/dump.docs.sql` 은 실제 파일이라 워커가 미들웨어 이전에 단락 처리하므로
 //     여기서 못 막고 nuxt.config 의 _redirects 로 차단한다.)
-const PROTECTED_PREFIXES = ['/api/wbs', '/api/issues', '/api/members', '/api/account', '/api/board']
+const PROTECTED_PREFIXES = ['/api/wbs', '/api/issues', '/api/members', '/api/account', '/api/board', '/api/uploads']
 const PROTECTED_DUMP_PREFIXES = ['/__nuxt_content']
 
 function matches(path: string, prefixes: string[]): boolean {
