@@ -55,7 +55,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="it in rows" :key="it.id" class="row" @click="open(it.id)">
+            <tr v-for="it in rows" :key="it.id" class="issue-row" @click="open(it.id)">
               <td><span class="badge type">{{ issueTypeLabel(it.type) }}</span></td>
               <td>
                 <span class="row-title">{{ it.title }}</span>
@@ -274,10 +274,12 @@ function open(id: number) {
 .table tbody tr:last-child td {
   border-bottom: none;
 }
-.row {
+/* tbody tr 에 .row 를 쓰면 전역 유틸 `.row{display:flex}`(main.css)와 충돌해
+   행이 flex 박스가 되어 table-layout:fixed 컬럼을 무시한다 → .issue-row 로 분리. */
+.issue-row {
   cursor: pointer;
 }
-.row:hover td {
+.issue-row:hover td {
   background: var(--ink-50);
 }
 .c-type {

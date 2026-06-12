@@ -1,6 +1,6 @@
 # 2026-06-12 작업 이력
 
-> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증.
+> **한 줄 요약**: `malgn-noti-mng` 관리앱에 **회원 시스템**(직접 회원가입[개인정보 동의·아이디 중복확인·완료 화면]·로그인/세션·내 정보(/account 프로필·비밀번호 변경)·참여자 목록·맑은오피스 연동[서버 간 upsert·SSO 토큰] 임시 구현)을 풀스택으로 구축하고, 원격 D1(`malgn-noti-project`)에 `member` 테이블(마이그레이션 0002·0003) 적용 후 **Cloudflare Pages 프로덕션 배포**. 프로덕션 회원가입이 500으로 실패 → 원인은 `hashPassword` 의 **PBKDF2 반복수 210,000회가 Pages Functions CPU 한도 초과** → `PBKDF2_ITER` 를 **100,000** 으로 하향해 재배포, signup/login/me/account/members 전부 **200 GREEN** 검증 완료. **(§4)** 이어 **사이트 전체 로그인 게이트(#2)+문서 통합(#1)** 을 프로덕션 배포·검증(비로그인 `/`·`/docs`·`/wbs` 302→/login, `/api/*` 401, 로그인 후 전 페이지·문서 렌더 200). **문서 원시 덤프 누수 차단(#3 핵심)은 미해결** — `@nuxt/content` 가 D1 가 아니라 정적 HTTP 덤프(`/__nuxt_content/docs/sql_dump.txt`)를 런타임에 가져오는 구조라, 해당 경로를 리다이렉트로 막으면 SSR·문서 목록(`/docs`·`/`·`/history`)이 500으로 깨짐을 라이브로 확인하고 차단을 **철회**(렌더 우선). 덤프는 현재도 공개 200 — 후속 D1 전환 필요. **(§5)** 이어 **이슈 게시판**(`/issues` 목록·작성·상세·수정, 커밋 `21bc838`)·**목록 테이블 정렬 fix**(`table-layout:fixed`+컬럼 폭, `4205411`)·**재시드 도구**(`1c21522`)의 누락된 배포 이력을 정합하고, 라이브 `/issues` 가 stale 배포로 여전히 깨져 보이던 문제를 **재배포**로 해결 — 소스는 정상(fix 기커밋·working tree clean)이었고 빌드만 미반영. alias `2463c918`, 프로덕션 fix-CSS `index.Cc80tf4J.css` **200+`table-layout:fixed`** GREEN 검증. **(§6→§7)** 재배포 후에도 동일 리포트 → §6 에선 HTML `Cache-Control` 부재로 **캐시 탓**이라 보고 `no-cache` 미들웨어를 넣었으나(`34c31abb`), 이는 **오진**. **(§7)** Playwright 실브라우저 computed style 실측으로 본문 행 `class="row"` 가 전역 유틸 **`.row{display:flex}`(main.css:1389)** 와 충돌해 `tbody tr=flex`/`td=block` 이 되며 `table-layout:fixed` 컬럼을 무시함을 확정 → `app/pages/issues/index.vue` 본문 행 클래스 `row`→**`issue-row`** 분리로 수정·배포(`b2134bd8`), 헤더·본문 5컬럼 좌표 일치(`ALIGNED:true`)·스크린샷 정상 검증. 교훈: 표 행에 범용 유틸명 금지·레이아웃 버그는 실브라우저로 확정.
 
 ---
 
@@ -123,3 +123,32 @@
 - **신규**: `server/middleware/no-cache.ts`(HTML no-cache 미들웨어).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `34c31abb`. HTML `no-cache` / 에셋 immutable 헤더 GREEN 검증.
 - **결론**: 정렬 fix 는 §5 시점에 이미 라이브 정상. §6 은 캐시로 인한 "옛 화면" 재발을 헤더로 차단.
+
+> ⚠️ **정정(§7)**: §5·§6 의 "라이브 정렬은 정상, 원인은 브라우저 캐시" 결론은 **오진**이었다. `table-layout:fixed` 자체는 적용됐으나 **본문 행이 전역 `.row{display:flex}` 와 충돌해 컬럼을 무시**하고 있었다 — 정적 HTML/CSS 텍스트 검사로는 안 잡히고 실브라우저 computed style 로만 드러났다. no-cache 헤더(§6)는 유효한 개선이지만 정렬 깨짐의 원인은 아니었다. 실제 수정은 §7.
+
+---
+
+## 7. 진짜 원인 — 본문 행 `class="row"` ↔ 전역 `.row{display:flex}` 충돌 (실브라우저 computed style 로 확정)
+
+**전환**: §6 재배포 후에도 동일 리포트. 정적 HTML/CSS 텍스트 검사(인라인 scoped CSS·specificity)로는 "정상"이라 결론이 났으나 화면은 계속 깨짐 → **추론을 버리고 Playwright(channel chrome)로 프로덕션 `/issues` 를 임시 세션으로 실제 렌더**해 computed style·셀 좌표를 실측.
+
+**실측 결과(결정적)**:
+- 테이블 computed `table-layout: fixed` ✓, width 1030 ✓.
+- `thead th` 좌측 좌표 = 121/205/807/891/1011 (84/602/84/120/140 으로 전폭 정상 분배).
+- `tbody td` 좌측 좌표 = 121/196/352/427/497 (67/148/67/62/130 **내용 크기로 좌측에 뭉침**).
+- **같은 테이블인데 thead 와 tbody 의 컬럼 모델이 분리** → 원인 후보는 tbody 계열의 `display` 오버라이드.
+- 하위 요소 computed `display` 덤프: `thead tr=table-row`·`th=table-cell`(정상) vs **`tbody tr=flex`**·**`td=block`**. → 본문 행이 테이블 행이 아니라 **플렉스 컨테이너**(자식 `td` 는 flex 가 자동 blockify).
+
+**근본원인**: `app/assets/css/main.css:1389` 의 전역 유틸 **`.row { display: flex; align-items: center; gap: 8px }`** 가, 이슈 목록이 `tbody` 행에 붙인 **`class="row"`** 와 클래스명 충돌. 페이지 scoped `.row[data-v]` 는 `cursor`·`hover` 만 정의하고 `display` 를 안 줘서 전역 `display:flex` 가 그대로 적용 → 행이 flex 박스가 되며 `table-layout:fixed` 컬럼을 무시.
+
+**수정**: `app/pages/issues/index.vue` 의 본문 행 클래스 `row` → **`issue-row`** 로 변경(템플릿 + scoped `.issue-row`/`.issue-row:hover td`, 충돌 사유 주석 추가). 전역 `.row` 유틸은 건드리지 않음. 코드베이스 전수 grep 결과 테이블 행에 `class="row"` 를 쓴 곳은 이 페이지뿐(타 페이지 동일 충돌 없음).
+
+**배포/검증**(프로덕션, alias `b2134bd8`):
+- Playwright 재렌더 — `tbody tr display = table-row` 복구, 헤더·본문 셀 좌측 좌표 **5컬럼 모두 일치**(121·205·807·891·1011), `ALIGNED: true`, 스크린샷 정상 정렬 육안 확인.
+- 검증용 임시계정 `zz_%` 3건(render/disp/verify) 삭제, 0건 확인. 임시 렌더 스크립트 정리.
+
+## 산출물 (§7)
+
+- **수정**: `app/pages/issues/index.vue`(본문 행 `.row`→`.issue-row`, 충돌 주석).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `b2134bd8` — 이슈 목록 정렬 **실브라우저 검증 GREEN**.
+- **교훈**: scoped-CSS 인라인·specificity 가 "정상"이어도 **전역 유틸 클래스명 충돌(`.row`)** 은 정적 검사로 안 드러난다. 레이아웃 버그는 **실브라우저 computed style** 로 확정할 것. 표 행에 범용 유틸명(`row`/`col`)을 쓰지 말 것.
