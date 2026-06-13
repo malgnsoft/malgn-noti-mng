@@ -26,7 +26,9 @@ const arr = JSON.parse(json)
 const stmts = arr
   .map((s) => {
     const i = s.lastIndexOf(' -- ')
-    return (i >= 0 ? s.slice(0, i) : s).trim()
+    // 각 문은 이미 `;` 로 끝나므로 후행 세미콜론을 떼고 join 에서 단일 `;` 로 다시 붙인다
+    // (안 떼면 `;;` 빈 statement 가 생겨 wrangler d1 execute 가 "SQL code did not contain a statement" 로 실패).
+    return (i >= 0 ? s.slice(0, i) : s).trim().replace(/;+\s*$/, '')
   })
   .filter(Boolean)
 

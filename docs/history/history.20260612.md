@@ -265,3 +265,26 @@
 
 - **수정**: `app/pages/issues/index.vue`(필터 레이아웃·`.select` 폭).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> alias `be6fee5d`.
+
+---
+
+## 13. 작업 이력/문서 페이지 "문서를 찾을 수 없습니다" — 콘텐츠 D1 재시드 누락 + `gen-content-seed` `;;` 버그 수정
+
+**증상**: `/history/history.20260611`(→ `/docs/history/history.20260611`) 등 문서 상세가 "문서를 찾을 수 없습니다 / 경로: …" 로 빈다.
+
+**근본원인(2중)**:
+1. 이 앱 @nuxt/content(v3, Cloudflare)는 **콘텐츠 D1 `_content_docs` 를 런타임 조회**하고, docs 변경 배포 시 **빌드 체크섬이 바뀌면** 런타임이 덤프로 재시드를 시도하나 그게 불안정 → **`docs/` 변경 배포에서는 원격 콘텐츠 D1 을 미리 시드해야 한다**(이미 문서화된 필수 절차, `scripts/gen-content-seed.mjs` 주석). **오늘 §1~§12 동안 history 를 여러 번 고쳐 배포하면서 이 재시드를 매번 누락** → 프로덕션 콘텐츠 D1 이 stale·체크섬 불일치 → 문서 조회 실패.
+2. 재시드 생성기 `scripts/gen-content-seed.mjs` 가 각 문이 이미 `;` 로 끝나는데 join 에서 `;` 를 또 붙여 **`;;`**(빈 statement) 를 만들어 `wrangler d1 execute` 가 **"SQL code did not contain a statement"** 로 실패 → 이 도구는 **한 번도 실제 적용된 적이 없었음**.
+
+**수정/조치**:
+- `scripts/gen-content-seed.mjs` — 각 문에서 후행 `;` 를 떼고(`replace(/;+\s*$/,'')`) join 하도록 수정(`;;` 제거).
+- 절차 적용: `pnpm build`(현재 docs 전체 덤프) → 배포(alias `cc6424fb`) → `pnpm content:seed:gen`(dist/content-seed.sql) → `wrangler d1 execute malgn-noti-project --remote --file=dist/content-seed.sql`(56문, `_content_docs` DROP+재생성·`_content_info` 체크섬을 배포 빌드값으로 갱신, 161행 기록).
+- **검증**(실브라우저, 로그인): `/docs/history/history.20260611` h1 "2026-06-11 작업 이력"·본문 13,953자, `/docs/history/history.20260612` 18,437자, `/history`·`/docs` 목록 정상(미발견 alert 없음).
+
+**운영 규칙(중요)**: **docs/ 를 바꾼 배포는 반드시 build → deploy → `content:seed:gen` → `d1 execute content-seed.sql` 까지** 한 흐름으로 수행한다(배포 빌드와 콘텐츠 D1 체크섬을 일치시킬 것). 이 §13 기록 자체도 docs 변경이므로 동일 절차로 최종 재시드한다.
+
+## 산출물 (§13)
+
+- **수정**: `scripts/gen-content-seed.mjs`(`;;` 빈 statement 버그).
+- **운영**: 원격 콘텐츠 D1 `_content_docs`/`_content_info` 재시드(현재 빌드 체크섬). 최종 alias 는 §13 재시드 빌드 기준.
+- **문서화**: docs 변경 배포 시 콘텐츠 D1 재시드 필수 절차 재확인(§4 한계의 실무 해소).
