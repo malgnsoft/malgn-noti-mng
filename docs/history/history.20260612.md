@@ -288,3 +288,31 @@
 - **수정**: `scripts/gen-content-seed.mjs`(`;;` 빈 statement 버그).
 - **운영**: 원격 콘텐츠 D1 `_content_docs`/`_content_info` 재시드(현재 빌드 체크섬). 최종 alias 는 §13 재시드 빌드 기준.
 - **문서화**: docs 변경 배포 시 콘텐츠 D1 재시드 필수 절차 재확인(§4 한계의 실무 해소).
+
+---
+
+## 14. 작성일 KST 고정 + 콘텐츠 페이지 클릭 네비 빈 화면 수정
+
+### 14.1 작성일 KST 표기
+
+**증상**: 이슈 작성일이 서버(UTC)·클라이언트(KST) 환경에 따라 다르게 표기(SSR `04:23` ↔ 클라 `13:23`), 하이드레이션 불일치.
+
+**수정**(`app/utils/issueMeta.ts` `formatDate`): `getFullYear/getHours`(로컬 TZ) 대신 **KST(UTC+9·DST 없음) 고정** — `new Date(d+9h)` 후 `getUTC*` 파트로 포맷(Intl 24시 버그 없이 결정적, 서버·클라 동일).
+
+### 14.2 콘텐츠 목록/문서 클릭 네비 시 빈 화면
+
+**증상**: `/history`·`/docs` 등을 **링크 클릭(클라이언트 네비)** 하면 빈 화면, **새로고침(SSR)** 하면 정상. 실브라우저 재현 — 클릭 네비 후 `.tl-card` 0개(덤프 요청 200인데 쿼리는 빈 결과).
+
+**근본원인**: 콘텐츠 목록/상세가 **클라이언트 `queryCollection`**(`useAllDocs`·`docs/[...slug]`)을 쓰는데, @nuxt/content 클라이언트 콘텐츠 DB(WASM)가 클릭 네비 시점에 미적재라 빈 결과 → SSR(서버 D1 조회)만 정상.
+
+**수정**: 콘텐츠 조회를 **서버 API 로 일원화** — `server/api/docs.get.ts`(목록 path/title/description)·`server/api/doc.get.ts`(단건, 렌더용 body AST). `queryCollection` 서버 시그니처(`event, collection`)는 `@nuxt/content/nitro` 에서 명시 import(자동 import 는 typecheck 가 클라 오버로드로 오인). `app/composables/useDocs.ts useAllDocs` → `useFetch('/api/docs')`, `docs/[...slug].vue` → `useFetch('/api/doc')`. 두 엔드포인트는 인증 게이트(`/api/docs`·`/api/doc`)에 추가. `useFetch` 는 SSR·클라 네비 모두 서버 API(=D1) 를 호출하므로 양쪽 일관.
+
+**검증/배포**(alias `1d5ad445`):
+- 서버 API: `/api/docs` 48건(`/history/history.20260611` 포함)·`/api/doc?path=…` body=object·비로그인 **401**.
+- 실브라우저: `/issues`→클릭 `/history` 타임라인 **20카드**(이전 0), 카드 클릭 문서 상세 article 렌더, 작성일 SSR·클라 **동일 KST**(`09:40`). `typecheck`·`lint` 통과.
+
+## 산출물 (§14)
+
+- **신규**: `server/api/docs.get.ts`, `server/api/doc.get.ts`.
+- **수정**: `app/utils/issueMeta.ts`(KST), `app/composables/useDocs.ts`·`app/pages/docs/[...slug].vue`(useFetch 전환), `server/middleware/auth.ts`(게이트 prefix `/api/doc`·`/api/docs`).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §14 재시드 빌드 기준). 클릭 네비·KST GREEN.

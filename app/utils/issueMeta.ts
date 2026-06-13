@@ -67,6 +67,9 @@ export function formatDate(iso: string | null): string {
   if (!iso) return '—'
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
+  // KST(Asia/Seoul, UTC+9·DST 없음) 고정 — 서버(UTC)·클라이언트 TZ 무관하게 동일 표기.
+  // +9h 후 UTC 파트로 포맷하면 Intl 24시 버그 없이 결정적.
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
   const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+  return `${kst.getUTCFullYear()}-${p(kst.getUTCMonth() + 1)}-${p(kst.getUTCDate())} ${p(kst.getUTCHours())}:${p(kst.getUTCMinutes())}`
 }

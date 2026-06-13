@@ -9,11 +9,9 @@ export interface DocItem {
 
 const HISTORY_PREFIX = '/history'
 
-/** 모든 콘텐츠(문서 + history) */
+/** 모든 콘텐츠(문서 + history) — 서버 API 경유(클라 네비 시 빈 결과 방지). */
 export function useAllDocs() {
-  return useAsyncData('docs:all', () =>
-    queryCollection('docs').order('path', 'ASC').all()
-  )
+  return useFetch<DocItem[]>('/api/docs', { key: 'docs:all' })
 }
 
 /** history 항목 여부 (path 가 /history/ 로 시작) */

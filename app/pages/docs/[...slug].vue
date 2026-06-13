@@ -28,11 +28,12 @@ const contentPath = computed(() => {
   return '/' + parts.filter(Boolean).join('/')
 })
 
-const { data: doc } = await useAsyncData(
-  'doc:' + contentPath.value,
-  () => queryCollection('docs').path(contentPath.value).first(),
-  { watch: [contentPath] }
-)
+// 서버 API 경유로 콘텐츠 D1 조회 — 클라이언트 queryCollection 의 네비 시 빈 결과 문제 회피.
+const { data: docRes } = await useFetch('/api/doc', {
+  query: { path: contentPath },
+  key: 'doc:' + contentPath.value,
+})
+const doc = computed(() => docRes.value?.data ?? null)
 
 const isHist = computed(() => isHistory(contentPath.value))
 const backTo = computed(() => (isHist.value ? '/history' : '/docs'))
