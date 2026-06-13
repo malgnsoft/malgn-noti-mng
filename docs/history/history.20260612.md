@@ -381,3 +381,24 @@
 - **DB**: 원격 D1 `issue_comment` 테이블 추가.
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §16 재시드 빌드 기준). 답글 작성/목록/삭제 GREEN.
 - **후속 후보**: 답글 수정, 마크다운 렌더, 작성/멘션 알림.
+
+---
+
+## 17. 답글 마크다운 렌더 + 이미지 업로드 (이슈 작성과 동일 에디터)
+
+**요청**: 답글도 이슈 본문과 동일하게 마크다운(MD) 입력·이미지 업로드 지원.
+
+**설계**: 이슈 본문 에디터(textarea + 이미지 첨부·드래그·붙여넣기·커서 삽입)의 중복을 없애고 **공용 컴포넌트 `AppMarkdownEditor.vue`** 로 추출 → 이슈 본문·답글이 동일 동작 보장.
+- `AppMarkdownEditor`: props `modelValue`/`placeholder`/`rows`/`disabled`/`mono`/`minHeight`, `update:modelValue` 1방향 + 커서 위치 삽입. 업로드는 `/api/uploads`(§8), `![alt](url)` 삽입.
+- `AppIssueForm`: 자체 업로드 로직·CSS 제거하고 `<AppMarkdownEditor mono :rows=14>` 사용.
+- 답글(`issues/[id]/index.vue`): 입력란을 `<AppMarkdownEditor :rows=3>` 로 교체, 표시는 `renderMarkdown(c.body)` → `.doc-prose` v-html(이슈 본문과 동일 렌더·이미지 max-width). `.c-body` 는 doc-prose 첫/마지막 자식 마진만 리셋.
+
+**검증/배포**(프로덕션 alias `9d87f853`, 테스트 admin):
+- 실브라우저: 답글 에디터에 텍스트+이미지 첨부 → `![](/api/uploads/…)` 삽입 확인, 등록 후 렌더 답글에 `<strong>`(굵게)·`<img>`(로드 완료 naturalWidth>0) 확인. 입력란 "이미지 첨부" 버튼·"마크다운 지원" 힌트 노출.
+- `typecheck`·`lint` 통과. 테스트 답글·계정만 정리(사용자 실제 답글 보존).
+
+## 산출물 (§17)
+
+- **신규**: `app/components/AppMarkdownEditor.vue`(MD+이미지 공용 에디터).
+- **수정**: `app/components/AppIssueForm.vue`(공용 에디터 사용·중복 제거), `app/pages/issues/[id]/index.vue`(답글 MD 렌더·에디터 교체).
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §17 재시드 빌드 기준). 답글 MD·이미지 GREEN. (스키마 변경 없음 — 답글 body 는 기존 TEXT 그대로.)

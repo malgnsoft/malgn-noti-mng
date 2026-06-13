@@ -64,18 +64,19 @@
                 @click="deleteComment(c)"
               >삭제</button>
             </div>
-            <p class="c-body">{{ c.body }}</p>
+            <!-- renderMarkdown 이 이스케이프 후 서식만 입힘(XSS 안전). -->
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div class="c-body doc-prose" v-html="renderMarkdown(c.body)" />
           </li>
         </ul>
         <p v-else class="comments-empty">아직 답글이 없습니다. 첫 답글을 남겨보세요.</p>
 
         <form class="comment-form" @submit.prevent="submitComment">
-          <textarea
+          <AppMarkdownEditor
             v-model="commentBody"
-            class="comment-input"
-            rows="3"
-            placeholder="답글을 입력하세요"
+            :rows="3"
             :disabled="commentBusy"
+            placeholder="답글을 입력하세요. 마크다운·이미지 첨부를 지원합니다."
           />
           <div class="comment-actions">
             <button type="submit" class="comment-btn" :disabled="commentBusy || !commentBody.trim()">
@@ -391,32 +392,17 @@ useHead(() => ({ title: issue.value?.title ?? '이슈' }))
 }
 .c-body {
   font-size: 14px;
-  color: var(--ink-800);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
+}
+.c-body :deep(:first-child) {
+  margin-top: 0;
+}
+.c-body :deep(:last-child) {
+  margin-bottom: 0;
 }
 .comments-empty {
   margin-bottom: 22px;
   font-size: 13px;
   color: var(--ink-400);
-}
-.comment-input {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 14px;
-  color: var(--ink-900);
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md, 8px);
-  outline: none;
-  resize: vertical;
-  min-height: 64px;
-  line-height: 1.5;
-}
-.comment-input:focus {
-  border-color: var(--accent-ink);
-  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .comment-actions {
   display: flex;
