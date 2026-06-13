@@ -17,6 +17,7 @@
             <th>성명</th>
             <th>아이디</th>
             <th>회사명</th>
+            <th>역할</th>
             <th>등급</th>
             <th>상태</th>
             <th>구분</th>
@@ -31,6 +32,7 @@
             </td>
             <td class="mono">{{ m.loginId }}</td>
             <td>{{ m.company || '—' }}</td>
+            <td>{{ m.role || '—' }}</td>
             <td>
               <span class="badge" :class="m.grade === 'admin' ? 'badge-admin' : 'badge-member'">
                 {{ m.grade === 'admin' ? '관리자' : '참여자' }}
@@ -61,7 +63,7 @@
             </td>
           </tr>
           <tr v-if="!rows.length">
-            <td colspan="7" class="empty">등록된 참여자가 없습니다.</td>
+            <td colspan="8" class="empty">등록된 참여자가 없습니다.</td>
           </tr>
         </tbody>
       </table>
