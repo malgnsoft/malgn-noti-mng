@@ -28,7 +28,11 @@ const stmts = arr
     const i = s.lastIndexOf(' -- ')
     // 각 문은 이미 `;` 로 끝나므로 후행 세미콜론을 떼고 join 에서 단일 `;` 로 다시 붙인다
     // (안 떼면 `;;` 빈 statement 가 생겨 wrangler d1 execute 가 "SQL code did not contain a statement" 로 실패).
-    return (i >= 0 ? s.slice(0, i) : s).trim().replace(/;+\s*$/, '')
+    let stmt = (i >= 0 ? s.slice(0, i) : s).trim().replace(/;+\s*$/, '')
+    // _content_info 는 DROP 없이 CREATE IF NOT EXISTS + INSERT 라 재실행 시 PK(checksum_docs) 충돌 →
+    // 재시드(이미 시드된 D1 갱신)가 가능하도록 OR REPLACE 로 바꾼다. _content_docs 는 DROP 후 재생성이라 무관.
+    stmt = stmt.replace(/^INSERT INTO _content_info\b/i, 'INSERT OR REPLACE INTO _content_info')
+    return stmt
   })
   .filter(Boolean)
 
