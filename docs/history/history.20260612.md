@@ -355,3 +355,29 @@
 - **DB**: 원격 D1 `member.grade` 추가 + dotype 관리자 승격.
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §15 재시드 빌드 기준). 권한·승인 전 흐름 GREEN.
 - **한계/후속**: 이메일 알림(승인 시) 미구현, 마지막 관리자 자기강등은 본인 변경 금지로 1차 방어(다중 관리자 권장).
+
+---
+
+## 16. 이슈 답글(댓글) 기능
+
+**요청**: 이슈에 답글을 달 수 있도록.
+
+**DB**(`server/db/schema.ts` + `0005_issue_comment.sql`, 원격 D1 직접 execute): `issue_comment`(id·issue_id·body·author_id·author_name·created_at) + `idx_issue_comment_issue` 인덱스. issue_id 는 issue.id 앱 레벨 참조(FK 미강제 — board/wbs 관례).
+
+**백엔드**:
+- `server/utils/issueComments.ts` — `useIssueComments`(D1 + dev 인메모리 폴백): `listByIssue`·`findById`·`create`·`remove`.
+- `GET /api/issues/[id]/comments`(로그인 필수, 읽기 전체 허용)·`POST`(작성, 본문 1~5000자, authorName 스냅샷, 대상 이슈 존재 확인)·`DELETE /api/issues/[id]/comments/[cid]`(작성자 본인 또는 관리자). `/api/issues` 게이트 프리픽스로 보호.
+
+**프론트엔드**(`app/pages/issues/[id]/index.vue`): 본문 아래 답글 섹션 — 목록(작성자·KST 작성일·본문 `pre-wrap`·본인/관리자 삭제 버튼) + 작성 폼(textarea + 등록, 빈 값 비활성). `useFetch` 로 목록 조회, 작성/삭제 후 `refresh`.
+
+**검증/배포**(프로덕션 alias `315dc34d`, 테스트 admin/member 부트스트랩, 실제 이슈 2):
+- API: admin/member POST 200, GET 목록 2건(작성자명 포함), 타인 DELETE **403**·작성자 본인 200·관리자 200·빈 본문 **400**.
+- 실브라우저: 상세에서 답글 작성 → "답글 1" 카운트·카드(작성자·KST 날짜·삭제) 렌더 스크린샷 확인. `typecheck`·`lint` 통과. 테스트 답글·회원 정리.
+
+## 산출물 (§16)
+
+- **신규**: `server/utils/issueComments.ts`, `server/api/issues/[id]/comments.{get,post}.ts`, `server/api/issues/[id]/comments/[cid].delete.ts`, `server/db/migrations/0005_issue_comment.sql`.
+- **수정**: `server/db/schema.ts`(issue_comment), `app/pages/issues/[id]/index.vue`(답글 섹션).
+- **DB**: 원격 D1 `issue_comment` 테이블 추가.
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §16 재시드 빌드 기준). 답글 작성/목록/삭제 GREEN.
+- **후속 후보**: 답글 수정, 마크다운 렌더, 작성/멘션 알림.

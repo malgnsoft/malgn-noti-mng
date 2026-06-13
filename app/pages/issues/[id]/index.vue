@@ -48,6 +48,42 @@
       <!-- eslint-disable-next-line vue/no-v-html -->
       <div v-if="issue.body" class="doc-prose body" v-html="renderedBody" />
       <p v-else class="no-body">본문이 없습니다.</p>
+
+      <section class="comments">
+        <h2 class="comments-head">답글 <span class="cc">{{ comments.length }}</span></h2>
+
+        <ul v-if="comments.length" class="comment-list">
+          <li v-for="c in comments" :key="c.id" class="comment">
+            <div class="c-top">
+              <span class="c-author">{{ c.authorName || '—' }}</span>
+              <span class="c-date">{{ formatDate(c.createdAt) }}</span>
+              <button
+                v-if="canManageComment(c)"
+                type="button"
+                class="c-del"
+                @click="deleteComment(c)"
+              >삭제</button>
+            </div>
+            <p class="c-body">{{ c.body }}</p>
+          </li>
+        </ul>
+        <p v-else class="comments-empty">아직 답글이 없습니다. 첫 답글을 남겨보세요.</p>
+
+        <form class="comment-form" @submit.prevent="submitComment">
+          <textarea
+            v-model="commentBody"
+            class="comment-input"
+            rows="3"
+            placeholder="답글을 입력하세요"
+            :disabled="commentBusy"
+          />
+          <div class="comment-actions">
+            <button type="submit" class="comment-btn" :disabled="commentBusy || !commentBody.trim()">
+              {{ commentBusy ? '등록 중…' : '답글 등록' }}
+            </button>
+          </div>
+        </form>
+      </section>
     </article>
   </div>
 </template>
@@ -79,6 +115,55 @@ const { member, isAdmin } = useAuth()
 // 수정/삭제·상태 변경: 작성자 본인 또는 관리자.
 const isAuthor = computed(() => !!member.value && !!issue.value && member.value.id === issue.value.authorId)
 const canManage = computed(() => isAuthor.value || isAdmin.value)
+
+// ── 답글 ────────────────────────────────────────────────
+interface CommentItem {
+  id: number
+  issueId: number
+  body: string
+  authorId: number
+  authorName: string
+  createdAt: string
+}
+const { data: commentsData, refresh: refreshComments } = await useFetch<{ data: CommentItem[] }>(
+  () => `/api/issues/${id.value}/comments`,
+  { key: () => `issue-comments-${id.value}` },
+)
+const comments = computed(() => commentsData.value?.data ?? [])
+const commentBody = ref('')
+const commentBusy = ref(false)
+
+function canManageComment(c: CommentItem) {
+  return isAdmin.value || (!!member.value && member.value.id === c.authorId)
+}
+
+async function submitComment() {
+  const body = commentBody.value.trim()
+  if (!body || commentBusy.value) return
+  commentBusy.value = true
+  try {
+    await $fetch(`/api/issues/${id.value}/comments`, { method: 'POST', body: { body } })
+    commentBody.value = ''
+    await refreshComments()
+  }
+  catch (e) {
+    toast.add({ title: extractError(e, '답글을 등록하지 못했습니다'), color: 'error' })
+  }
+  finally {
+    commentBusy.value = false
+  }
+}
+
+async function deleteComment(c: CommentItem) {
+  if (!confirm('이 답글을 삭제할까요?')) return
+  try {
+    await $fetch(`/api/issues/${id.value}/comments/${c.id}`, { method: 'DELETE' })
+    await refreshComments()
+  }
+  catch (e) {
+    toast.add({ title: extractError(e, '답글을 삭제하지 못했습니다'), color: 'error' })
+  }
+}
 
 const statusModel = ref('')
 watch(issue, (v) => { if (v) statusModel.value = v.status }, { immediate: true })
@@ -252,6 +337,108 @@ useHead(() => ({ title: issue.value?.title ?? '이슈' }))
   margin-top: 22px;
   font-size: 14px;
   color: var(--ink-400);
+}
+/* ── 답글 ── */
+.comments {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.comments-head {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 16px;
+}
+.comments-head .cc {
+  margin-left: 4px;
+  color: var(--accent-ink);
+}
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.comment {
+  padding: 14px 16px;
+  background: var(--ink-50);
+  border-radius: var(--r-md, 8px);
+}
+.c-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.c-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-800);
+}
+.c-date {
+  font-size: 12px;
+  color: var(--ink-400);
+}
+.c-del {
+  margin-left: auto;
+  font-size: 12px;
+  color: #dc2626;
+  cursor: pointer;
+}
+.c-del:hover {
+  text-decoration: underline;
+}
+.c-body {
+  font-size: 14px;
+  color: var(--ink-800);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.comments-empty {
+  margin-bottom: 22px;
+  font-size: 13px;
+  color: var(--ink-400);
+}
+.comment-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--ink-900);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 8px);
+  outline: none;
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.5;
+}
+.comment-input:focus {
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.comment-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-900);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md, 8px);
+  cursor: pointer;
+}
+.comment-btn:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+.comment-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 .badge {
   display: inline-block;

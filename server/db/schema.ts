@@ -87,3 +87,13 @@ export const issue = sqliteTable('issue', {
   createdAt: text('created_at').notNull(), // ISO8601
   updatedAt: text('updated_at'), // ISO8601
 })
+
+// 이슈 답글(댓글). 작성자 = member. issueId 는 issue.id 앱 레벨 참조.
+export const issueComment = sqliteTable('issue_comment', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  issueId: integer('issue_id').notNull(),
+  body: text('body').notNull().default(''), // 평문(렌더 시 줄바꿈 보존)
+  authorId: integer('author_id').notNull(),
+  authorName: text('author_name').notNull().default(''),
+  createdAt: text('created_at').notNull(), // ISO8601
+})
