@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 import type { H3Event } from 'h3'
 import { member } from '../db/schema'
+import { getSessionMemberId } from './auth'
 
 // 회원 저장소 — 프로덕션은 D1(Drizzle), dev(바인딩 없음)은 인메모리 폴백.
 // dev 인메모리는 `pnpm dev` 프로세스가 살아있는 동안만 유지(재시작 시 초기화).
@@ -14,11 +15,12 @@ export interface MemberRecord {
   name: string
   company: string
   role: string
+  grade: string // admin | member (권한 등급)
   email: string
   phone: string
   source: string // direct | office
   officeId: string | null
-  status: string
+  status: string // pending | active | suspended
   agreedAt: string | null
   createdAt: string
   updatedAt: string | null
@@ -73,6 +75,9 @@ interface MemberRepo {
   upsertByOffice(input: OfficeMember): Promise<{ member: MemberRecord, created: boolean }>
   updateProfile(id: number, patch: ProfileUpdate): Promise<MemberRecord | null>
   updatePassword(id: number, passwordHash: string): Promise<void>
+  setStatus(id: number, status: string): Promise<MemberRecord | null>
+  setGrade(id: number, grade: string): Promise<MemberRecord | null>
+  remove(id: number): Promise<boolean>
   list(): Promise<MemberRecord[]>
 }
 
@@ -98,11 +103,12 @@ const memRepo: MemberRepo = {
       name: input.name,
       company: input.company,
       role: input.role,
+      grade: 'member',
       email: input.email,
       phone: input.phone,
       source: 'direct',
       officeId: null,
-      status: 'active',
+      status: 'pending', // 직접가입은 관리자 승인 대기
       agreedAt: input.agreedAt,
       createdAt: nowIso(),
       updatedAt: null,
@@ -131,11 +137,12 @@ const memRepo: MemberRepo = {
       name: input.name,
       company: input.company,
       role: input.role,
+      grade: 'member',
       email: input.email,
       phone: input.phone,
       source: 'office',
       officeId: input.officeId,
-      status: 'active',
+      status: 'active', // 오피스 연동은 신뢰 출처 → 자동 활성
       agreedAt: null,
       createdAt: nowIso(),
       updatedAt: null,
@@ -153,6 +160,24 @@ const memRepo: MemberRepo = {
     const m = memStore.find(x => x.id === id)
     if (m) Object.assign(m, { passwordHash, updatedAt: nowIso() })
     return Promise.resolve()
+  },
+  setStatus: (id, status) => {
+    const m = memStore.find(x => x.id === id)
+    if (!m) return Promise.resolve(null)
+    Object.assign(m, { status, updatedAt: nowIso() })
+    return Promise.resolve(m)
+  },
+  setGrade: (id, grade) => {
+    const m = memStore.find(x => x.id === id)
+    if (!m) return Promise.resolve(null)
+    Object.assign(m, { grade, updatedAt: nowIso() })
+    return Promise.resolve(m)
+  },
+  remove: (id) => {
+    const i = memStore.findIndex(x => x.id === id)
+    if (i < 0) return Promise.resolve(false)
+    memStore.splice(i, 1)
+    return Promise.resolve(true)
   },
   list: () => Promise.resolve([...memStore]),
 }
@@ -178,7 +203,8 @@ function d1Repo(db: Db): MemberRepo {
       const [row] = await db.insert(member).values({
         ...input,
         source: 'direct',
-        status: 'active',
+        grade: 'member',
+        status: 'pending', // 직접가입은 관리자 승인 대기
         createdAt: nowIso(),
       }).returning()
       if (!row) throw new Error('회원 생성에 실패했습니다')
@@ -230,6 +256,20 @@ function d1Repo(db: Db): MemberRepo {
     async updatePassword(id, passwordHash) {
       await db.update(member).set({ passwordHash, updatedAt: nowIso() }).where(eq(member.id, id))
     },
+    async setStatus(id, status) {
+      const [row] = await db.update(member).set({ status, updatedAt: nowIso() })
+        .where(eq(member.id, id)).returning()
+      return row ?? null
+    },
+    async setGrade(id, grade) {
+      const [row] = await db.update(member).set({ grade, updatedAt: nowIso() })
+        .where(eq(member.id, id)).returning()
+      return row ?? null
+    },
+    async remove(id) {
+      const rows = await db.delete(member).where(eq(member.id, id)).returning()
+      return rows.length > 0
+    },
     async list() {
       return db.select().from(member).orderBy(asc(member.id))
     },
@@ -239,4 +279,14 @@ function d1Repo(db: Db): MemberRepo {
 export function useMembers(event: H3Event): MemberRepo {
   const db = useDb(event)
   return db ? d1Repo(db) : memRepo
+}
+
+/** 세션 회원이 관리자(grade=admin)인지 확인 — 아니면 401/403. 관리자 레코드 반환. */
+export async function requireAdmin(event: H3Event): Promise<MemberRecord> {
+  const id = await getSessionMemberId(event)
+  if (!id) throw createError({ statusCode: 401, statusMessage: '로그인이 필요합니다' })
+  const me = await useMembers(event).findById(id)
+  if (!me) throw createError({ statusCode: 401, statusMessage: '회원 정보를 찾을 수 없습니다' })
+  if (me.grade !== 'admin') throw createError({ statusCode: 403, statusMessage: '관리자 권한이 필요합니다' })
+  return me
 }

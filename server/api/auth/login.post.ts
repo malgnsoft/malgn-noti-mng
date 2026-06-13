@@ -19,6 +19,9 @@ export default defineEventHandler(async (event) => {
   if (!ok || !m) {
     throw createError({ statusCode: 401, statusMessage: '아이디 또는 비밀번호가 올바르지 않습니다' })
   }
+  if (m.status === 'pending') {
+    throw createError({ statusCode: 403, statusMessage: '관리자 승인 대기 중입니다. 승인 후 로그인할 수 있습니다.' })
+  }
   if (m.status !== 'active') {
     throw createError({ statusCode: 403, statusMessage: '사용이 정지된 계정입니다' })
   }

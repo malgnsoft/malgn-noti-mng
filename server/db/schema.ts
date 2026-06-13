@@ -44,12 +44,13 @@ export const member = sqliteTable('member', {
   passwordHash: text('password_hash'), // 직접가입 회원만. 오피스 연동 회원은 null
   name: text('name').notNull(), // 성명
   company: text('company').notNull().default(''), // 회사명
-  role: text('role').notNull().default(''), // 역할
+  role: text('role').notNull().default(''), // 역할(직무)
+  grade: text('grade').notNull().default('member'), // 권한 등급: admin | member
   email: text('email').notNull().default(''), // 이메일
   phone: text('phone').notNull().default(''), // 휴대전화번호
   source: text('source').notNull().default('direct'), // direct | office
   officeId: text('office_id').unique(), // 맑은오피스 사용자 식별자(연동 회원)
-  status: text('status').notNull().default('active'), // active | suspended
+  status: text('status').notNull().default('pending'), // pending(승인대기) | active | suspended
   agreedAt: text('agreed_at'), // 약관·개인정보 수집·이용 동의 시각(직접가입). null=미동의/오피스
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at'),

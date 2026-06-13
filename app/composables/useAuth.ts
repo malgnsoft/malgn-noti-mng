@@ -5,11 +5,12 @@ export interface AuthMember {
   name: string
   company: string
   role: string
+  grade: string // admin | member (권한 등급)
   email: string
   phone: string
   source: string // direct | office
   officeId: string | null
-  status: string
+  status: string // pending | active | suspended
   agreedAt: string | null
   createdAt: string
   updatedAt: string | null
@@ -37,6 +38,7 @@ export interface ProfileUpdatePayload {
 export function useAuth() {
   const member = useState<AuthMember | null>('auth:member', () => null)
   const isAuthed = computed(() => !!member.value)
+  const isAdmin = computed(() => member.value?.grade === 'admin')
 
   async function refresh() {
     const res = await useRequestFetch()<{ data: AuthMember | null }>('/api/auth/me')
@@ -53,12 +55,12 @@ export function useAuth() {
     return res.data
   }
 
+  // 회원가입은 관리자 승인 대기(pending) — 세션 미발급, member 설정하지 않음.
   async function signup(payload: SignupPayload) {
-    const res = await $fetch<{ data: AuthMember }>('/api/auth/signup', {
+    const res = await $fetch<{ data: { pending: boolean, name: string } }>('/api/auth/signup', {
       method: 'POST',
       body: payload,
     })
-    member.value = res.data
     return res.data
   }
 
@@ -83,5 +85,5 @@ export function useAuth() {
     })
   }
 
-  return { member, isAuthed, refresh, login, signup, logout, updateProfile, changePassword }
+  return { member, isAuthed, isAdmin, refresh, login, signup, logout, updateProfile, changePassword }
 }

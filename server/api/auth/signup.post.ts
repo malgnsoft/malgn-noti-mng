@@ -1,8 +1,8 @@
-import { hashPassword, setSession } from '../../utils/auth'
-import { toPublic, useMembers } from '../../utils/members'
+import { hashPassword } from '../../utils/auth'
+import { useMembers } from '../../utils/members'
 
 // 직접 회원가입 — 아이디/비밀번호/성명/회사명/역할/이메일/휴대전화.
-// 성공 시 바로 세션 발급(자동 로그인).
+// status='pending' 으로 생성 → 관리자 승인 후에만 로그인 가능(세션 발급 안 함).
 export default defineEventHandler(async (event) => {
   const b = await readBody(event)
 
@@ -45,6 +45,6 @@ export default defineEventHandler(async (event) => {
     agreedAt: new Date().toISOString(),
   })
 
-  await setSession(event, created.id)
-  return { data: toPublic(created) }
+  // 자동 로그인하지 않는다 — 관리자 승인(status=active) 후 로그인 가능.
+  return { data: { pending: true, name: created.name } }
 })

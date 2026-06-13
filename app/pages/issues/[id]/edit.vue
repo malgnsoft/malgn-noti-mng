@@ -34,11 +34,11 @@ const { data, pending } = await useFetch<{ data: IssueDetail }>(
 )
 const issue = computed(() => data.value?.data ?? null)
 
-const { member } = useAuth()
+const { member, isAdmin } = useAuth()
 
-// 작성자 본인이 아니면 상세로 리다이렉트(서버 403 + 클라 이중 차단).
+// 작성자 본인 또는 관리자가 아니면 상세로 리다이렉트(서버 403 + 클라 이중 차단).
 watchEffect(() => {
-  if (issue.value && member.value && member.value.id !== issue.value.authorId) {
+  if (issue.value && member.value && member.value.id !== issue.value.authorId && !isAdmin.value) {
     navigateTo(`/issues/${id.value}`)
   }
 })

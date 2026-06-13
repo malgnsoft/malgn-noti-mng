@@ -316,3 +316,42 @@
 - **신규**: `server/api/docs.get.ts`, `server/api/doc.get.ts`.
 - **수정**: `app/utils/issueMeta.ts`(KST), `app/composables/useDocs.ts`·`app/pages/docs/[...slug].vue`(useFetch 전환), `server/middleware/auth.ts`(게이트 prefix `/api/doc`·`/api/docs`).
 - **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §14 재시드 빌드 기준). 클릭 네비·KST GREEN.
+
+---
+
+## 15. 참여자 권한 등급(관리자/참여자) + 가입 승인 절차 + 이슈 관리자 권한
+
+**요청**: ① 참여자 등급(관리자/참여자) 도입 — 관리자는 참여자 관리 + 모든 이슈 수정/삭제, 참여자는 참여자 관리 불가·GNB 참여자 메뉴 미노출. ② 이슈는 작성자만 수정/삭제(타인 글 조회만), 관리자는 예외. ③ 회원가입은 **관리자 승인** 후에만 로그인 가능.
+
+**설계 결정**:
+- 기존 `role` 컬럼은 **직무**라 권한 등급으로 못 씀 → **`grade`('admin'|'member')** 신설. 승인은 **`status`('pending'|'active'|'suspended')** 사용.
+- 부트스트랩: 기존 활성 회원(김도형/dotype)을 `grade='admin'` 으로 승격 → 승인자 확보(마이그레이션 `0004`).
+
+**DB**(`server/db/schema.ts` + `0004_member_grade.sql`, 원격 D1 직접 execute): `ALTER TABLE member ADD COLUMN grade … DEFAULT 'member'` + `UPDATE … SET grade='admin' WHERE status='active'`. status 기본값 schema 상 'pending'(신규 직접가입).
+
+**백엔드**:
+- `members.ts`: `MemberRecord.grade`, `create`(status='pending'·grade='member'), `upsertByOffice`(office 는 active 유지), `setStatus`/`setGrade`/`remove` 추가, **`requireAdmin(event)`** 헬퍼.
+- `auth/signup`: 세션 미발급(자동 로그인 제거) → `{pending:true,name}` 반환. `auth/login`: status='pending' → 403 "관리자 승인 대기 중".
+- `GET /api/members`: **관리자 전용**(403). 신규 `PATCH /api/members/[id]`(승인 status=active·등급 grade, 본인 변경 금지)·`DELETE /api/members/[id]`(거절/삭제, 본인 금지) — 인증 게이트 보호.
+- `issues/[id].patch·delete`: 작성자 **또는 관리자**(`grade='admin'`) 허용.
+
+**프론트엔드**:
+- `useAuth`: `grade`·**`isAdmin`**, `signup` 은 member 미설정(pending).
+- GNB(`layouts/default`): 참여자 메뉴 `adminOnly` → `isAdmin` 일 때만 노출.
+- `members.vue`: 관리자 전용(비관리자 `/` 리다이렉트) + 등급/상태 배지 + 승인·등급토글·삭제 버튼(본인 행 제외).
+- 이슈 상세/수정: `canManage = 작성자 || 관리자` 로 수정/삭제·상태변경·편집 진입 허용.
+- 회원가입 완료 화면: "가입 신청 접수 — 관리자 승인 후 로그인" 안내(자동 로그인 제거).
+
+**검증/배포**(프로덕션 alias `f1d9fc68`, 테스트 계정 D1 부트스트랩):
+- 가입 → `{pending:true}`·세션 없음, 승인 전 로그인 **403**(승인 대기), 관리자 PATCH 승인 후 로그인 **200**.
+- `GET /api/members` 관리자 200·참여자 **403**. GNB 참여자 메뉴 관리자만, 참여자가 `/members` 접근 시 `/` 리다이렉트.
+- 이슈: 작성자 PATCH 200·관리자 PATCH(비작성자) 200·타 참여자 PATCH/DELETE **403**·관리자 DELETE 200.
+- 실브라우저 members 화면(등급·상태·관리 버튼·본인 '나' 배지) 정상. `typecheck`·`lint` 통과. 테스트 데이터 정리(실데이터 dotype·첫 게시물만).
+
+## 산출물 (§15)
+
+- **신규**: `server/api/members/[id].patch.ts`·`[id].delete.ts`, `server/db/migrations/0004_member_grade.sql`.
+- **수정**: `schema.ts`·`members.ts`(grade·승인·관리자 헬퍼), `auth/{signup,login}`, `members.get`, `issues/[id].{patch,delete}`, `useAuth`, `layouts/default`, `members.vue`, `issues/[id]/{index,edit}.vue`, `signup/{index,complete}.vue`.
+- **DB**: 원격 D1 `member.grade` 추가 + dotype 관리자 승격.
+- **배포**: 프로덕션 <https://malgn-noti-mng.pages.dev> (최종 §15 재시드 빌드 기준). 권한·승인 전 흐름 GREEN.
+- **한계/후속**: 이메일 알림(승인 시) 미구현, 마지막 관리자 자기강등은 본인 변경 금지로 1차 방어(다중 관리자 권장).

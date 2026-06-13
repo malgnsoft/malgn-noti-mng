@@ -16,7 +16,7 @@
             <span class="badge" :class="issueStatusClass(issue.status)">{{ issueStatusLabel(issue.status) }}</span>
             <span v-if="issue.priority" class="badge prio">우선순위 {{ issuePriorityLabel(issue.priority) }}</span>
           </div>
-          <div v-if="isAuthor" class="head-actions">
+          <div v-if="canManage" class="head-actions">
             <NuxtLink :to="`/issues/${issue.id}/edit`" class="act">
               <UIcon name="i-lucide-pencil" class="act-ico" />수정
             </NuxtLink>
@@ -34,7 +34,7 @@
             <span class="dot">·</span>
             <span>수정 {{ formatDate(issue.updatedAt) }}</span>
           </template>
-          <label v-if="isAuthor" class="status-change">
+          <label v-if="canManage" class="status-change">
             <span class="dot">·</span>
             <span class="status-label">상태</span>
             <select v-model="statusModel" class="select" :disabled="busy" @change="changeStatus">
@@ -75,8 +75,10 @@ const { data, pending, error } = await useFetch<{ data: IssueDetail }>(
 const issue = computed(() => data.value?.data ?? null)
 const renderedBody = computed(() => (issue.value ? renderMarkdown(issue.value.body) : ''))
 
-const { member } = useAuth()
+const { member, isAdmin } = useAuth()
+// 수정/삭제·상태 변경: 작성자 본인 또는 관리자.
 const isAuthor = computed(() => !!member.value && !!issue.value && member.value.id === issue.value.authorId)
+const canManage = computed(() => isAuthor.value || isAdmin.value)
 
 const statusModel = ref('')
 watch(issue, (v) => { if (v) statusModel.value = v.status }, { immediate: true })

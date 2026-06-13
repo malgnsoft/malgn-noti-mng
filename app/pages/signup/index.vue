@@ -142,6 +142,9 @@ const idCheck = reactive<{ state: 'idle' | 'checking' | 'ok' | 'bad', message: s
 
 const passwordMatch = computed(() => form.password === form.passwordConfirm)
 
+// 가입 신청자 이름을 완료 화면으로 전달(승인 대기 안내용).
+const pendingName = useState<string>('signup:pendingName', () => '')
+
 const privacyText = '맑은노티 프로젝트 관리 사이트는 회원 식별 및 프로젝트 참여자 관리를 위해 아이디·성명·회사명·역할·이메일·휴대전화번호를 수집·이용합니다. 수집 항목은 회원 탈퇴 시까지 보관하며, 법령에 따른 경우를 제외하고 제3자에게 제공하지 않습니다. (상세 처리방침은 추후 확정)'
 
 if (member.value) {
@@ -206,7 +209,7 @@ async function onSubmit() {
 
   pending.value = true
   try {
-    await signup({
+    const res = await signup({
       loginId: form.loginId,
       password: form.password,
       name: form.name,
@@ -216,6 +219,7 @@ async function onSubmit() {
       phone: form.phone,
       agreedPrivacy: form.agreedPrivacy,
     })
+    pendingName.value = res.name || form.name
     await navigateTo('/signup/complete', { replace: true })
   }
   catch (e: unknown) {

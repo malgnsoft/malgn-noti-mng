@@ -2,30 +2,24 @@
   <div class="auth-page">
     <div class="auth-card complete">
       <span class="complete-icon">
-        <UIcon name="i-lucide-check" />
+        <UIcon name="i-lucide-clock" />
       </span>
-      <h1 class="complete-title">가입이 완료되었습니다</h1>
+      <h1 class="complete-title">가입 신청이 접수되었습니다</h1>
       <p class="complete-sub">
-        <template v-if="member">{{ member.name }}님, </template>맑은노티 프로젝트 관리에 오신 것을 환영합니다.
+        <template v-if="pendingName">{{ pendingName }}님, </template>관리자 승인 후 로그인할 수 있습니다.
+        승인이 완료되면 입력하신 아이디·비밀번호로 로그인해 주세요.
       </p>
 
-      <dl v-if="member" class="complete-info">
-        <div><dt>아이디</dt><dd class="mono">{{ member.loginId }}</dd></div>
-        <div v-if="member.company"><dt>회사명</dt><dd>{{ member.company }}</dd></div>
-        <div v-if="member.role"><dt>역할</dt><dd>{{ member.role }}</dd></div>
-      </dl>
-
-      <NuxtLink to="/" class="complete-btn">시작하기</NuxtLink>
+      <NuxtLink to="/login" class="complete-btn">로그인 화면으로</NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { member } = useAuth()
-
-// 직접 진입(비로그인) 방지 — 가입 직후가 아니면 로그인으로.
-if (!member.value) {
-  await navigateTo('/login', { replace: true })
+// 가입 신청 직후에만 표시(직접 진입 방지). 이름은 signup 화면에서 전달.
+const pendingName = useState<string>('signup:pendingName', () => '')
+if (!pendingName.value) {
+  await navigateTo('/signup', { replace: true })
 }
 </script>
 

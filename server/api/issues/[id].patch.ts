@@ -1,9 +1,10 @@
 import { getSessionMemberId } from '../../utils/auth'
 import { isIssuePriority, isIssueStatus, isIssueType, useIssues } from '../../utils/issues'
 import type { IssuePatch } from '../../utils/issues'
+import { useMembers } from '../../utils/members'
 
-// 이슈 수정 / 상태 변경 — 세션 + 소유권(작성자 본인). 부분 업데이트.
-// 작성자(또는 향후 admin) 아니면 403. 상태만 변경도 동일 엔드포인트.
+// 이슈 수정 / 상태 변경 — 세션 + 권한(작성자 본인 또는 관리자). 부분 업데이트.
+// 작성자도 관리자도 아니면 403. 상태만 변경도 동일 엔드포인트.
 export default defineEventHandler(async (event) => {
   const memberId = await getSessionMemberId(event)
   if (!memberId) throw createError({ statusCode: 401, statusMessage: '로그인이 필요합니다' })
@@ -15,7 +16,10 @@ export default defineEventHandler(async (event) => {
   const existing = await repo.findById(id)
   if (!existing) throw createError({ statusCode: 404, statusMessage: '이슈를 찾을 수 없습니다' })
   if (existing.authorId !== memberId) {
-    throw createError({ statusCode: 403, statusMessage: '수정 권한이 없습니다' })
+    const me = await useMembers(event).findById(memberId)
+    if (me?.grade !== 'admin') {
+      throw createError({ statusCode: 403, statusMessage: '수정 권한이 없습니다' })
+    }
   }
 
   const b = await readBody(event)

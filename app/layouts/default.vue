@@ -10,7 +10,7 @@
         </NuxtLink>
         <nav class="gnb-nav">
           <NuxtLink
-            v-for="item in nav"
+            v-for="item in visibleNav"
             :key="item.to"
             :to="item.to"
             class="gnb-link"
@@ -62,10 +62,12 @@ const nav = [
   { to: '/wbs', label: 'WBS', icon: 'i-lucide-gantt-chart' },
   { to: '/docs', label: '문서', icon: 'i-lucide-book-text' },
   { to: '/history', label: '작업 이력', icon: 'i-lucide-history' },
-  { to: '/members', label: '참여자', icon: 'i-lucide-users' }
+  { to: '/members', label: '참여자', icon: 'i-lucide-users', adminOnly: true }
 ]
 
-const { member, logout } = useAuth()
+const { member, isAdmin, logout } = useAuth()
+// '참여자' 등 adminOnly 메뉴는 관리자에게만 노출.
+const visibleNav = computed(() => nav.filter(item => !item.adminOnly || isAdmin.value))
 async function onLogout() {
   await logout()
   await navigateTo('/')

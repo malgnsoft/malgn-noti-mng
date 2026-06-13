@@ -1,10 +1,8 @@
-import { getSessionMemberId } from '../utils/auth'
-import { toPublic, useMembers } from '../utils/members'
+import { requireAdmin, toPublic, useMembers } from '../utils/members'
 
-// 프로젝트 참여자 목록 — 로그인 필요.
+// 프로젝트 참여자 목록 — 관리자(grade=admin) 전용. 승인 대기(pending) 회원 포함 전체.
 export default defineEventHandler(async (event) => {
-  const id = await getSessionMemberId(event)
-  if (!id) throw createError({ statusCode: 401, statusMessage: '로그인이 필요합니다' })
+  await requireAdmin(event)
   const rows = await useMembers(event).list()
   return { data: rows.map(toPublic) }
 })
