@@ -64,37 +64,9 @@ if (!pendingName.value) {
   color: var(--ink-500);
   line-height: 1.5;
 }
-.complete-info {
-  margin: 22px 0;
-  text-align: left;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md, 8px);
-  overflow: hidden;
-}
-.complete-info > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--line);
-}
-.complete-info > div:last-child {
-  border-bottom: none;
-}
-.complete-info dt {
-  color: var(--ink-500);
-  font-weight: 600;
-}
-.complete-info dd {
-  color: var(--ink-900);
-}
-.mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-}
 .complete-btn {
   display: block;
+  margin-top: 24px;
   height: 42px;
   line-height: 42px;
   background: var(--ink-900);
